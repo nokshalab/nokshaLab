@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>নকশা ল্যাব: কাজের তালিকা ও আর্থিক হিসাব</title>
-    <!-- Tailwind CSS লোড করা হচ্ছে -->
+    <title>নকশা ল্যাব: রিয়েল-টাইম ক্লাউড সিঙ্ক</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-            background-color: #f1f5f9; /* Slate 100 */
-            color: #334155; 
+            /* লাইট মোড: খুব সফট এবং নিউট্রাল ব্যাকগ্রাউন্ড */
+            background-color: #f3f4f6; 
+            color: #1f2937; 
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
@@ -22,24 +25,32 @@
         .dark ::-webkit-scrollbar-thumb { background-color: #475569; }
         ::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
 
-        /* --- কার্ড স্টাইল --- */
+        /* --- কার্ড স্টাইল (লাইট মোড রি-ডিজাইন) --- */
         .card-shadow {
             background-color: #ffffff;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            border: 1px solid transparent; 
-            transition: all 0.3s ease;
+            /* খুব সফট এবং লেয়ারড শ্যাডো */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e5e7eb; /* খুব হালকা বর্ডার */
+            border-radius: 1rem; /* স্মুথ রাউন্ডেড কর্নার */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* হোভার এফেক্ট কার্ডের জন্য */
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            border-color: #d1d5db;
         }
         
         .input-style {
-            padding: 0.7rem 0.9rem;
-            border: 1px solid #e2e8f0; 
-            border-radius: 0.6rem;
-            background-color: #f8fafc; 
-            transition: all 0.2s;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb; 
+            border-radius: 0.75rem;
+            background-color: #f9fafb; /* ইনপুটের ভেতর হালকা রঙ */
+            transition: all 0.2s ease-in-out;
             width: 100%;
-            font-size: 0.9rem;
-            color: #334155;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            font-size: 0.95rem;
+            color: #1f2937;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
         }
         .input-style:focus {
             outline: none;
@@ -49,8 +60,8 @@
         }
         
         .modal-overlay {
-            background-color: rgba(15, 23, 42, 0.6); 
-            backdrop-filter: blur(8px);
+            background-color: rgba(17, 24, 39, 0.7); 
+            backdrop-filter: blur(6px);
             z-index: 100;
         }
 
@@ -58,37 +69,43 @@
         .category-item {
             transition: all 0.2s ease;
             border: 1px solid transparent;
+            color: #4b5563;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
         }
         .category-item:hover {
-            background-color: #f8fafc;
-            transform: translateX(4px);
+            background-color: #f3f4f6;
+            color: #111827;
+            transform: translateX(3px);
         }
 
-        /* --- অ্যাক্টিভ ক্যাটাগরি স্টাইল --- */
+        /* --- অ্যাক্টিভ ক্যাটাগরি স্টাইল (লাইট মোড - ক্লিন লুক) --- */
         .active-category {
-            background-color: #eff6ff !important;
+            background-color: #ffffff !important;
             color: #4f46e5 !important;
+            border: 1px solid #e0e7ff !important;
             border-left: 4px solid #4f46e5 !important;
-            border-radius: 4px 8px 8px 4px !important;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1), 0 2px 4px -1px rgba(99, 102, 241, 0.06);
             font-weight: 600;
-            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1);
         }
         .dark .active-category {
             background-color: rgba(67, 56, 202, 0.2) !important;
             color: #818cf8 !important;
+            border: 1px solid rgba(99, 102, 241, 0.2) !important;
             border-left: 4px solid #818cf8 !important;
+            box-shadow: none;
         }
 
         /* --- হাইলাইট অ্যানিমেশন --- */
         @keyframes highlightPulse {
-            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6); border-color: #6366f1; transform: scale(1); }
-            50% { box-shadow: 0 0 25px 0 rgba(99, 102, 241, 0.3); border-color: #818cf8; transform: scale(1.01); }
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); border-color: #6366f1; transform: scale(1); }
+            50% { box-shadow: 0 0 20px 0 rgba(99, 102, 241, 0.2); border-color: #818cf8; transform: scale(1.01); }
             100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); border-color: transparent; transform: scale(1); }
         }
         .highlight-section {
             animation: highlightPulse 1.5s ease-out;
             border: 2px solid transparent; 
-            border-radius: 0.75rem;
+            border-radius: 1rem;
             position: relative;
             z-index: 10;
         }
@@ -96,7 +113,7 @@
         /* --- ডার্ক মোড --- */
         body.dark {
             background-color: #0f172a;
-            color: #cbd5e1;
+            color: #e2e8f0;
         }
         .dark .bg-white {
             background-color: #1e293b; 
@@ -112,9 +129,18 @@
             background-color: #020617; 
             border-color: #334155;
             color: #f8fafc;
+            box-shadow: none;
+        }
+        .dark .input-style:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+        .dark .category-item {
+            color: #cbd5e1;
         }
         .dark .category-item:hover {
             background-color: #334155;
+            color: #f8fafc;
         }
         .dark .glass-header {
             background-color: rgba(15, 23, 42, 0.85);
@@ -135,10 +161,21 @@
 
         /* স্টিকি হেডার গ্লাস এফেক্ট */
         .glass-header {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        /* টেবিল হেডার (লাইট মোড) */
+        .table-header-light {
+            background-color: #f9fafb;
+            border-bottom: 1px solid #f3f4f6;
+            color: #6b7280;
+        }
+        /* টেবিল রো হোভার (লাইট মোড) */
+        .table-row-hover:hover {
+            background-color: #f9fafb;
         }
     </style>
 </head>
@@ -148,29 +185,20 @@
     <header class="sticky top-0 z-50 w-full glass-header transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             
-            <!-- লোগো ও টাইটেল -->
             <div class="flex flex-col">
                 <h1 class="text-2xl sm:text-3xl font-extrabold header-gradient-text tracking-tight cursor-default">নকশা ল্যাব</h1>
-                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">স্মার্ট প্রাইস লিস্ট ও প্রফিট ট্র্যাকার</p>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium tracking-wide">রিয়েল-টাইম ক্লাউড সিঙ্ক</p>
             </div>
 
-            <!-- কন্ট্রোল বাটন -->
-            <div class="flex items-center space-x-2">
-                <button id="undo-button" onclick="undo()" class="p-2 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 disabled:opacity-40 transition shadow-sm" title="Undo (ফিরে যান)">
-                    <svg class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l-7-7 7-7m5 14l7-7-7-7" transform="scale(-1, 1) translate(-24, 0)"></path></svg>
-                </button>
-                <button id="redo-button" onclick="redo()" class="p-2 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 disabled:opacity-40 transition shadow-sm" title="Redo (সামনে যান)">
-                    <svg class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l-7-7 7-7m5 14l7-7-7-7" /></svg>
-                </button>
-                
-                <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
-                
-                <!-- সেটিংস বাটন (Export/Import) -->
-                <button onclick="openSettingsModal()" class="p-2 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition shadow-sm text-gray-600 dark:text-gray-300" title="সেটিংস ও ব্যাকআপ">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </button>
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:flex items-center bg-white dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div id="connection-dot" class="w-2.5 h-2.5 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+                    <span id="connection-status" class="text-xs font-semibold text-gray-600 dark:text-gray-300">সংযোগ হচ্ছে...</span>
+                </div>
 
-                <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-full bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800 border border-indigo-100 dark:border-indigo-800 transition shadow-sm" title="থিম পরিবর্তন">
+                <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+
+                <button onclick="window.toggleTheme()" class="p-2 rounded-full bg-white dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-800/50 border border-gray-200 dark:border-indigo-800 transition shadow-sm" title="থিম পরিবর্তন">
                     <svg id="sun-icon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <svg id="moon-icon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
@@ -188,19 +216,19 @@
                     
                     <!-- ক্যাটাগরি ম্যানেজমেন্ট কার্ড -->
                     <div class="p-6 rounded-2xl card-shadow">
-                        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center border-b border-gray-100 dark:border-gray-700 pb-3">
-                            <span class="bg-indigo-100 dark:bg-indigo-900/50 p-2 rounded-lg mr-3 text-indigo-600 dark:text-indigo-400 shadow-sm">
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-5 flex items-center border-b border-gray-100 dark:border-gray-700 pb-3">
+                            <span class="bg-indigo-50 dark:bg-indigo-900/50 p-2 rounded-lg mr-3 text-indigo-600 dark:text-indigo-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                             </span>
                             ক্যাটাগরি ম্যানেজমেন্ট
                         </h2>
                         
-                        <form id="add-category-form" class="flex gap-2 mb-4">
+                        <form id="add-category-form" class="flex gap-2 mb-5">
                             <input type="text" id="new-category-name" placeholder="নতুন ক্যাটাগরি..." required class="input-style text-sm">
-                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition shadow-md shadow-indigo-500/20 whitespace-nowrap">যুক্ত করুন</button>
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition shadow-lg shadow-indigo-500/20 whitespace-nowrap">যুক্ত করুন</button>
                         </form>
                         
-                        <div class="max-h-[250px] overflow-y-auto space-y-1.5 pr-1 custom-scrollbar" id="category-list-manager">
+                        <div class="max-h-[250px] overflow-y-auto space-y-2 pr-1 custom-scrollbar" id="category-list-manager">
                             <!-- ক্যাটাগরি লিস্ট এখানে আসবে -->
                         </div>
                     </div>
@@ -208,7 +236,7 @@
                     <!-- নতুন কাজ যোগ করার ফর্ম কার্ড -->
                     <div class="p-6 rounded-2xl card-shadow">
                         <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-5 flex items-center border-b border-gray-100 dark:border-gray-700 pb-3">
-                            <span class="bg-emerald-100 dark:bg-emerald-900/50 p-2 rounded-lg mr-3 text-emerald-600 dark:text-emerald-400 shadow-sm">
+                            <span class="bg-emerald-50 dark:bg-emerald-900/50 p-2 rounded-lg mr-3 text-emerald-600 dark:text-emerald-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             </span>
                             নতুন কাজ যোগ করুন
@@ -216,7 +244,7 @@
                         <form id="add-task-form" class="space-y-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide ml-1">ক্যাটাগরি</label>
-                                <select id="new-task-category" class="input-style w-full text-sm font-medium" required>
+                                <select id="new-task-category" class="input-style w-full text-sm font-medium cursor-pointer" required>
                                     <!-- ক্যাটাগরি অপশন JS দিয়ে আসবে -->
                                 </select>
                             </div>
@@ -226,23 +254,21 @@
                                 <input type="number" id="new-task-price" placeholder="কাস্টমার প্রাইস (৳)" required class="input-style w-full text-sm" min="0">
                                 <input type="number" id="new-task-expense" placeholder="আপনার খরচ (৳)" required class="input-style w-full text-sm" min="0">
                             </div>
-                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg transition duration-300 shadow-lg shadow-emerald-500/20 mt-2">লিস্টে যোগ করুন</button>
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20 mt-2">লিস্টে যোগ করুন</button>
                         </form>
-                    </div>
-
-                    <!-- স্ট্যাটাস -->
-                    <div class="text-center">
-                         <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm transition-all duration-300" id="save-status">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                            সিস্টেম রেডি
-                         </span>
                     </div>
                 </div>
             </div>
 
             <!-- ডান পাশ: ক্যাটাগরি ভিত্তিক কাজের তালিকা (Scrollable) -->
             <div class="lg:col-span-8 space-y-8 pb-32" id="tasks-container">
-                <!-- এখানে ক্যাটাগরি অনুযায়ী টেবিলগুলো রেন্ডার হবে -->
+                <div class="flex justify-center items-center h-64 text-gray-400">
+                    <svg class="animate-spin h-8 w-8 mr-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    ডাটা লোড হচ্ছে...
+                </div>
             </div>
         </div>
     </div>
@@ -252,7 +278,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-gray-200 dark:border-gray-700 scale-100">
             <div class="bg-indigo-600 dark:bg-indigo-900 text-white p-5 flex justify-between items-center">
                 <h3 class="text-xl font-bold">কাজ এডিট করুন</h3>
-                <button onclick="closeEditModal()" class="text-white/80 hover:text-white transition p-1 rounded-full hover:bg-white/10">
+                <button onclick="window.closeEditModal()" class="text-white/80 hover:text-white transition p-1 rounded-full hover:bg-white/10">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -289,7 +315,7 @@
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-700 mt-2">
-                    <button type="button" onclick="closeEditModal()" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-5 rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-600">বাতিল</button>
+                    <button type="button" onclick="window.closeEditModal()" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-5 rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-600">বাতিল</button>
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-xl transition shadow-lg shadow-indigo-500/20">আপডেট করুন</button>
                 </div>
             </form>
@@ -301,7 +327,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-gray-200 dark:border-gray-700">
              <div class="bg-gray-800 dark:bg-gray-950 text-white p-4 flex justify-between items-center">
                 <h3 class="text-lg font-bold">ক্যাটাগরি নাম পরিবর্তন</h3>
-                <button onclick="closeCategoryEditModal()" class="text-white/80 hover:text-white transition p-1 rounded-full hover:bg-white/10">
+                <button onclick="window.closeCategoryEditModal()" class="text-white/80 hover:text-white transition p-1 rounded-full hover:bg-white/10">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -313,60 +339,34 @@
         </div>
     </div>
 
-    <!-- সেটিংস / ডেটা ম্যানেজমেন্ট মোডাল (নতুন) -->
-    <div id="settings-modal" class="hidden fixed inset-0 flex items-center justify-center p-4 modal-overlay">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-gray-200 dark:border-gray-700">
-             <div class="bg-gray-800 dark:bg-gray-950 text-white p-4 flex justify-between items-center">
-                <h3 class="text-lg font-bold flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    সেটিংস ও ব্যাকআপ
-                </h3>
-                <button onclick="closeSettingsModal()" class="text-white/80 hover:text-white transition p-1 rounded-full hover:bg-white/10">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="p-6 space-y-6">
-                <!-- এক্সপোর্ট সেকশন -->
-                <div class="space-y-3">
-                    <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">ডেটা এক্সপোর্ট (ব্যাকআপ)</h4>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">আপনার সমস্ত কাজের তালিকা একটি ফাইলে ডাউনলোড করে রাখুন। এটি অন্য কম্পিউটারে ব্যবহার করা যাবে।</p>
-                    <button onclick="exportData()" class="w-full flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl transition shadow-lg shadow-blue-500/20">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        ব্যাকআপ ডাউনলোড করুন
-                    </button>
-                </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-                <div class="border-t border-gray-100 dark:border-gray-700"></div>
-
-                <!-- ইমপোর্ট সেকশন -->
-                <div class="space-y-3">
-                    <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">ডেটা ইমপোর্ট (রিস্টোর)</h4>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">আগে ডাউনলোড করা ব্যাকআপ ফাইলটি এখানে আপলোড করুন।</p>
-                    
-                    <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="handleFileSelect(event)">
-                    <button onclick="triggerImport()" class="w-full flex justify-center items-center bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-4 rounded-xl transition border border-gray-200 dark:border-gray-600 border-dashed">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                        ফাইল সিলেক্ট করুন
-                    </button>
-                    <p id="import-status" class="text-xs text-center text-gray-400 min-h-[1.5em]"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <script>
-        // --- কনফিগারেশন ---
-        const STORAGE_KEY = 'noksha_lab_data_v3'; 
-        const THEME_KEY = 'noksha_lab_theme';
+        // --- ফায়ারবেস ইনিশিয়ালাইজেশন (আপনার কনফিগ) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaa1NZUI498mN7Z9WWGVyzaiwmNDB_cOU",
+            authDomain: "work-list-acc83.firebaseapp.com",
+            projectId: "work-list-acc83",
+            storageBucket: "work-list-acc83.firebasestorage.app",
+            messagingSenderId: "365350979318",
+            appId: "1:365350979318:web:5a3e0135a1581f89330ed7"
+        };
         
-        let appData = { categories: [], tasks: [] };
-        let history = []; 
-        let historyIndex = -1;
-        let saveTimeout;
-        let activeCategoryId = null; // বর্তমান অ্যাক্টিভ ক্যাটাগরি
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        const appId = 'noksha-lab-live'; 
 
+        // --- গ্লোবাল ভেরিয়েবল ---
+        const THEME_KEY = 'noksha_lab_theme';
+        let appData = { categories: [], tasks: [] };
+        let activeCategoryId = null;
+        let currentUser = null;
+
+        // ডিফল্ট ডেটা (যদি নতুন শুরু হয়)
         const defaultData = {
             categories: [
                 { id: 'cat_1', name: 'পাসপোর্ট ও ভিসা সার্ভিস' },
@@ -383,158 +383,99 @@
             ]
         };
 
+        // --- DOM Elements ---
         const tasksContainer = document.getElementById('tasks-container');
         const categoryListManager = document.getElementById('category-list-manager');
         const newTaskCategorySelect = document.getElementById('new-task-category');
         const editTaskCategorySelect = document.getElementById('edit-task-category');
-        const saveStatusEl = document.getElementById('save-status');
-        const undoButton = document.getElementById('undo-button');
-        const redoButton = document.getElementById('redo-button');
+        const connectionDot = document.getElementById('connection-dot');
+        const connectionStatus = document.getElementById('connection-status');
         const sunIcon = document.getElementById('sun-icon');
         const moonIcon = document.getElementById('moon-icon');
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- Auth & Realtime Sync Setup ---
+        async function initApp() {
             loadTheme();
-            loadData();
-            renderAll();
-        });
-
-        // --- সেটিংস ও ব্যাকআপ লজিক (নতুন) ---
-        const settingsModal = document.getElementById('settings-modal');
-        
-        function openSettingsModal() {
-            settingsModal.classList.remove('hidden');
-        }
-        function closeSettingsModal() {
-            settingsModal.classList.add('hidden');
-            document.getElementById('import-status').textContent = '';
-        }
-
-        // ডেটা এক্সপোর্ট (ডাউনলোড)
-        function exportData() {
-            const dataStr = JSON.stringify(appData, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
             
-            const a = document.createElement('a');
-            a.href = url;
-            // ফাইলের নাম: noksha_lab_backup_DATE.json
-            const date = new Date().toISOString().slice(0, 10);
-            a.download = `noksha_lab_backup_${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showStatus('ব্যাকআপ ডাউনলোড হয়েছে');
-        }
-
-        // ডেটা ইমপোর্ট (আপলোড)
-        function triggerImport() {
-            document.getElementById('import-file-input').click();
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            const statusEl = document.getElementById('import-status');
-            statusEl.textContent = "ফাইল প্রসেসিং হচ্ছে...";
-
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    // সাধারণ ভ্যালিডেশন
-                    if (Array.isArray(importedData.categories) && Array.isArray(importedData.tasks)) {
-                        if(confirm("সতর্কতা: বর্তমান সমস্ত ডেটা মুছে নতুন ডেটা লোড করা হবে। আপনি কি নিশ্চিত?")) {
-                            appData = importedData;
-                            saveData(); // সেভ এবং হিস্টরি আপডেট
-                            renderAll();
-                            statusEl.className = "text-xs text-center text-green-500";
-                            statusEl.textContent = "সফলভাবে ইমপোর্ট হয়েছে!";
-                            setTimeout(closeSettingsModal, 1500);
-                        } else {
-                            statusEl.textContent = "বাতিল করা হয়েছে।";
-                        }
-                    } else {
-                        throw new Error("Invalid format");
-                    }
-                } catch (error) {
-                    console.error(error);
-                    statusEl.className = "text-xs text-center text-red-500";
-                    statusEl.textContent = "ভুল ফাইল ফরম্যাট! সঠিক JSON ফাইল দিন।";
-                }
-                // ইনপুট রিসেট করা যাতে একই ফাইল আবার সিলেক্ট করা যায়
-                event.target.value = '';
-            };
-            reader.readAsText(file);
-        }
-
-
-        // --- স্মার্ট স্ক্রলিং এবং সিলেকশন ---
-        function scrollToCategory(catId) {
-            const element = document.getElementById(`cat-section-${catId}`);
-            if (element) {
-                activeCategoryId = catId;
-                renderCategoryManager(); 
-
-                const headerOffset = 100;
-                const elementPosition = element.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: "smooth"
-                });
-                
-                element.classList.remove('highlight-section');
-                void element.offsetWidth; 
-                element.classList.add('highlight-section');
-                
-                setTimeout(() => {
-                    element.classList.remove('highlight-section');
-                }, 3000);
-            }
-        }
-
-        // --- ডেটা লোড ও সেভ ---
-        function loadData() {
-            const storedData = localStorage.getItem(STORAGE_KEY);
-            if (storedData) {
-                appData = JSON.parse(storedData);
-            } else {
-                appData = JSON.parse(JSON.stringify(defaultData));
-                saveData(true);
-            }
-            addToHistory();
-        }
-
-        function saveData(skipHistory = false) {
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-                if (!skipHistory) {
-                    addToHistory();
-                    showStatus('ডেটা সেভ করা হয়েছে');
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (customTokenError) {
+                        console.warn("Custom token failed, trying anonymous:", customTokenError);
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
                 }
-            } catch (e) {
-                showStatus('সেভ ব্যর্থ হয়েছে', true);
+            } catch (error) {
+                console.error("Auth Error:", error);
+                showStatus("লগইন সমস্যা!", false);
+            }
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'noksha_lab', 'main_list');
+                    
+                    onSnapshot(docRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            appData = docSnap.data();
+                            showStatus("অনলাইন (সক্রিয়)", true);
+                        } else {
+                            appData = defaultData;
+                            setDoc(docRef, defaultData);
+                            showStatus("নতুন ডেটা তৈরি হচ্ছে...", true);
+                        }
+                        renderAll();
+                    }, (error) => {
+                        console.error("Sync Error:", error);
+                        if (error.code === 'permission-denied') {
+                            showStatus("রুলস এরর!", false);
+                            alert("দয়া করে ফায়ারবেস কনসোলে সঠিক রুলস সেট করুন।");
+                        } else {
+                            showStatus("সিঙ্ক সমস্যা!", false);
+                        }
+                    });
+                }
+            });
+        }
+
+        async function saveDataToCloud() {
+            if (!currentUser) return;
+            
+            showStatus("সেভ হচ্ছে...", 'pending');
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'noksha_lab', 'main_list');
+                await setDoc(docRef, appData);
+            } catch (error) {
+                console.error("Save Error:", error);
+                if (error.code === 'permission-denied') {
+                    showStatus("রুলস এরর!", false);
+                } else {
+                    showStatus("সেভ ব্যর্থ হয়েছে!", false);
+                }
             }
         }
 
-        function showStatus(msg, isError = false) {
-            saveStatusEl.innerHTML = isError 
-                ? `<span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>${msg}`
-                : `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>${msg}`;
+        function showStatus(msg, status) {
+            connectionStatus.textContent = msg;
+            connectionDot.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500', 'animate-pulse');
             
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => { 
-                saveStatusEl.innerHTML = `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>সিস্টেম রেডি`; 
-            }, 3000);
+            if (status === true) { 
+                connectionDot.classList.add('bg-green-500');
+                connectionStatus.classList.remove('text-red-500');
+                connectionStatus.classList.add('text-green-600', 'dark:text-green-400');
+            } else if (status === false) { 
+                connectionDot.classList.add('bg-red-500');
+                connectionStatus.classList.add('text-red-500');
+            } else { 
+                connectionDot.classList.add('bg-yellow-500', 'animate-pulse');
+                connectionStatus.classList.remove('text-red-500', 'text-green-600');
+            }
         }
 
-        // --- রেন্ডারিং ---
+        // --- UI রেন্ডারিং ফাংশন ---
         function renderAll() {
             renderCategoryOptions();
             renderCategoryManager();
@@ -564,13 +505,13 @@
                     : 'text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400';
 
                 return `
-                <div class="group flex justify-between items-center p-3 rounded-md cursor-pointer mb-1 ${activeClass}" onclick="scrollToCategory('${cat.id}')">
-                    <span class="text-sm ${textClass} truncate flex-1 transition">${cat.name}</span>
+                <div class="group flex justify-between items-center p-3 rounded-lg cursor-pointer mb-2 ${activeClass}" onclick="window.scrollToCategory('${cat.id}')">
+                    <span class="text-sm ${textClass} truncate flex-1 transition font-medium">${cat.name}</span>
                     <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition duration-200" onclick="event.stopPropagation()">
-                        <button onclick="openCategoryEditModal('${cat.id}')" class="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/50 p-1 rounded-md transition" title="নাম পরিবর্তন">
+                        <button onclick="window.openCategoryEditModal('${cat.id}')" class="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/50 p-1.5 rounded-lg transition" title="নাম পরিবর্তন">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </button>
-                        <button onclick="deleteCategory('${cat.id}')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 p-1 rounded-md transition" title="মুছে ফেলুন">
+                        <button onclick="window.deleteCategory('${cat.id}')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 p-1.5 rounded-lg transition" title="মুছে ফেলুন">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
@@ -586,13 +527,34 @@
                 
                 const section = document.createElement('div');
                 section.id = `cat-section-${cat.id}`; 
-                section.className = 'bg-white dark:bg-gray-800 rounded-2xl card-shadow overflow-hidden transition-all duration-300';
+                
+                // লাইট মোড: সাদা বর্ডার এবং খুব সফট শ্যাডো
+                section.className = 'bg-white dark:bg-gray-800 rounded-2xl card-shadow overflow-hidden transition-all duration-300 border border-gray-100 dark:border-gray-700 mb-8';
+
+                // --- পরিবর্তন: লাইট মোডে ক্লিন হেডার, ডার্ক মোডে আগের মতো ---
+                const isDark = document.body.classList.contains('dark');
+                
+                const headerClass = isDark
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-900 dark:to-purple-900 p-4 text-white shadow-sm' 
+                    : 'bg-white p-5 border-b border-gray-100';
+
+                const titleClass = isDark
+                    ? 'text-white'
+                    : 'text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600';
+
+                const countBadgeClass = isDark
+                    ? 'bg-white/20 dark:bg-black/30 text-white'
+                    : 'bg-indigo-50 text-indigo-600 border border-indigo-100';
 
                 const header = `
-                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-900 dark:to-purple-900 p-4 flex justify-between items-center text-white shadow-sm">
-                        <h3 class="text-lg font-bold flex items-center tracking-wide">
-                            <span class="bg-white/20 dark:bg-black/30 px-2.5 py-0.5 rounded-md mr-3 text-xs font-mono font-bold border border-white/10">${catTasks.length}</span>
-                            ${cat.name}
+                    <div class="${headerClass} flex justify-between items-center transition-colors duration-300">
+                        <h3 class="text-lg font-bold flex items-center tracking-wide ${isDark ? '' : 'text-gray-800'}">
+                            <span class="${countBadgeClass} px-2.5 py-0.5 rounded-md mr-3 text-xs font-mono font-bold">
+                                ${catTasks.length}
+                            </span>
+                            <span class="${titleClass}">
+                                ${cat.name}
+                            </span>
                         </h3>
                     </div>
                 `;
@@ -602,7 +564,7 @@
                     tableHTML = `
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-800/50">
+                            <thead class="bg-gray-50/80 dark:bg-gray-800/50">
                                 <tr>
                                     <th class="px-5 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/4">কাজের নাম</th>
                                     <th class="px-5 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/4 hidden md:table-cell">প্রয়োজনীয়তা</th>
@@ -616,16 +578,16 @@
                                     const profit = task.customerPrice - task.ownerExpense;
                                     const profitColor = profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400';
                                     return `
-                                    <tr class="hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition duration-150 group">
-                                        <td class="px-5 py-4 text-sm font-semibold text-gray-800 dark:text-gray-200">${task.name}</td>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-indigo-900/10 transition duration-150 group">
+                                        <td class="px-5 py-4 text-sm font-medium text-gray-700 dark:text-gray-200">${task.name}</td>
                                         <td class="px-5 py-4 text-xs text-gray-500 dark:text-gray-400 hidden md:table-cell leading-relaxed">${task.requirements}</td>
                                         <td class="px-5 py-4 text-right text-sm font-bold text-indigo-600 dark:text-indigo-400">৳${task.customerPrice}</td>
                                         <td class="px-5 py-4 text-right text-sm font-extrabold ${profitColor}">৳${profit}</td>
                                         <td class="px-5 py-4 text-center flex justify-center space-x-2 opacity-60 group-hover:opacity-100 transition">
-                                            <button onclick="openEditModal(${task.id})" class="text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 p-2 rounded-lg transition" title="এডিট">
+                                            <button onclick="window.openEditModal(${task.id})" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 p-2 rounded-lg transition" title="এডিট">
                                                 <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
                                             </button>
-                                            <button onclick="deleteTask(${task.id})" class="text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 p-2 rounded-lg transition" title="ডিলিট">
+                                            <button onclick="window.deleteTask(${task.id})" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 p-2 rounded-lg transition" title="ডিলিট">
                                                 <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
                                             </button>
                                         </td>
@@ -650,15 +612,78 @@
             });
         }
 
-        // --- ইভেন্ট লিসেনারস ---
+        // --- উইন্ডো গ্লোবাল ফাংশনস (HTML onclick এর জন্য) ---
+        window.scrollToCategory = function(catId) {
+            const element = document.getElementById(`cat-section-${catId}`);
+            if (element) {
+                activeCategoryId = catId;
+                renderCategoryManager(); 
+
+                const headerOffset = 100;
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+                
+                element.classList.remove('highlight-section');
+                void element.offsetWidth; 
+                element.classList.add('highlight-section');
+                setTimeout(() => element.classList.remove('highlight-section'), 3000);
+            }
+        };
+
+        window.deleteCategory = function(catId) {
+            const hasTasks = appData.tasks.some(t => t.categoryId === catId);
+            if (hasTasks && !confirm("সতর্কতা: ক্যাটাগরি ডিলিট করলে এর ভেতরের কাজগুলোও মুছে যাবে!")) return;
+            if (!hasTasks && !confirm("মুছে ফেলতে চান?")) return;
+            
+            appData.categories = appData.categories.filter(c => c.id !== catId);
+            appData.tasks = appData.tasks.filter(t => t.categoryId !== catId);
+            if(activeCategoryId === catId) activeCategoryId = null; 
+            saveDataToCloud();
+        };
+
+        window.deleteTask = function(id) {
+            if (confirm("স্থায়ীভাবে মুছে ফেলতে চান?")) {
+                appData.tasks = appData.tasks.filter(t => t.id !== id);
+                saveDataToCloud();
+            }
+        };
+
+        window.openEditModal = function(id) {
+            const task = appData.tasks.find(t => t.id === id);
+            if (!task) return;
+            document.getElementById('edit-task-id').value = task.id;
+            document.getElementById('edit-task-category').value = task.categoryId;
+            document.getElementById('edit-task-name').value = task.name;
+            document.getElementById('edit-task-requirements').value = task.requirements;
+            document.getElementById('edit-task-price').value = task.customerPrice;
+            document.getElementById('edit-task-expense').value = task.ownerExpense;
+            document.getElementById('edit-modal').classList.remove('hidden');
+        };
+
+        window.openCategoryEditModal = function(id) {
+            const cat = appData.categories.find(c => c.id === id);
+            if (!cat) return;
+            document.getElementById('edit-category-id').value = id;
+            document.getElementById('edit-category-name-input').value = cat.name;
+            document.getElementById('category-edit-modal').classList.remove('hidden');
+        };
+
+        window.closeEditModal = function() { document.getElementById('edit-modal').classList.add('hidden'); };
+        window.closeCategoryEditModal = function() { document.getElementById('category-edit-modal').classList.add('hidden'); };
+
+        // --- ইভেন্ট লিসেনারস (Form Submission) ---
         document.getElementById('add-category-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('new-category-name').value.trim();
             if (!name) return;
             appData.categories.push({ id: 'cat_' + Date.now(), name: name });
             document.getElementById('new-category-name').value = '';
-            saveData();
-            renderAll();
+            saveDataToCloud();
         });
 
         document.getElementById('add-task-form').addEventListener('submit', (e) => {
@@ -678,43 +703,9 @@
             document.getElementById('new-task-expense').value = '';
             document.getElementById('new-task-name').focus();
             
-            saveData();
-            renderTasksByCategory();
+            saveDataToCloud();
         });
 
-        function deleteCategory(catId) {
-            const hasTasks = appData.tasks.some(t => t.categoryId === catId);
-            if (hasTasks && !confirm("সতর্কতা: ক্যাটাগরি ডিলিট করলে এর ভেতরের কাজগুলোও মুছে যাবে!")) return;
-            if (!hasTasks && !confirm("মুছে ফেলতে চান?")) return;
-            
-            appData.categories = appData.categories.filter(c => c.id !== catId);
-            appData.tasks = appData.tasks.filter(t => t.categoryId !== catId);
-            if(activeCategoryId === catId) activeCategoryId = null; 
-            saveData();
-            renderAll();
-        }
-
-        function deleteTask(id) {
-            if (confirm("স্থায়ীভাবে মুছে ফেলতে চান?")) {
-                appData.tasks = appData.tasks.filter(t => t.id !== id);
-                saveData();
-                renderTasksByCategory();
-            }
-        }
-
-        const editModal = document.getElementById('edit-modal');
-        function openEditModal(id) {
-            const task = appData.tasks.find(t => t.id === id);
-            if (!task) return;
-            document.getElementById('edit-task-id').value = task.id;
-            document.getElementById('edit-task-category').value = task.categoryId;
-            document.getElementById('edit-task-name').value = task.name;
-            document.getElementById('edit-task-requirements').value = task.requirements;
-            document.getElementById('edit-task-price').value = task.customerPrice;
-            document.getElementById('edit-task-expense').value = task.ownerExpense;
-            editModal.classList.remove('hidden');
-        }
-        function closeEditModal() { editModal.classList.add('hidden'); }
         document.getElementById('edit-task-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = parseInt(document.getElementById('edit-task-id').value, 10);
@@ -725,21 +716,11 @@
                 task.requirements = document.getElementById('edit-task-requirements').value.trim();
                 task.customerPrice = parseInt(document.getElementById('edit-task-price').value, 10) || 0;
                 task.ownerExpense = parseInt(document.getElementById('edit-task-expense').value, 10) || 0;
-                saveData();
-                renderTasksByCategory();
-                closeEditModal();
+                saveDataToCloud();
+                window.closeEditModal();
             }
         });
 
-        const catEditModal = document.getElementById('category-edit-modal');
-        function openCategoryEditModal(id) {
-            const cat = appData.categories.find(c => c.id === id);
-            if (!cat) return;
-            document.getElementById('edit-category-id').value = id;
-            document.getElementById('edit-category-name-input').value = cat.name;
-            catEditModal.classList.remove('hidden');
-        }
-        function closeCategoryEditModal() { catEditModal.classList.add('hidden'); }
         document.getElementById('edit-category-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = document.getElementById('edit-category-id').value;
@@ -747,62 +728,32 @@
             const cat = appData.categories.find(c => c.id === id);
             if (cat && newName) {
                 cat.name = newName;
-                saveData();
-                renderAll();
-                closeCategoryEditModal();
+                saveDataToCloud();
+                window.closeCategoryEditModal();
             }
         });
 
-        function addToHistory() {
-            if (historyIndex < history.length - 1) history = history.slice(0, historyIndex + 1);
-            history.push(JSON.parse(JSON.stringify(appData)));
-            historyIndex = history.length - 1;
-            if (history.length > 50) { history.shift(); historyIndex--; }
-            updateHistoryButtons();
-        }
-        function undo() {
-            if (historyIndex > 0) {
-                historyIndex--;
-                appData = JSON.parse(JSON.stringify(history[historyIndex]));
-                renderAll();
-                saveData(true);
-            }
-            updateHistoryButtons();
-        }
-        function redo() {
-            if (historyIndex < history.length - 1) {
-                historyIndex++;
-                appData = JSON.parse(JSON.stringify(history[historyIndex]));
-                renderAll();
-                saveData(true);
-            }
-            updateHistoryButtons();
-        }
-        function updateHistoryButtons() {
-            undoButton.disabled = historyIndex <= 0;
-            redoButton.disabled = historyIndex >= history.length - 1;
-        }
-
+        // --- থিম লজিক ---
         function loadTheme() {
             const saved = localStorage.getItem(THEME_KEY) || 'light';
             document.body.classList.toggle('dark', saved === 'dark');
             updateThemeIcons(saved);
+            renderTasksByCategory(); // রি-রেন্ডার করা যাতে স্টাইল আপডেট হয়
         }
-        function toggleTheme() {
+        window.toggleTheme = function() {
             const isDark = document.body.classList.toggle('dark');
             localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
             updateThemeIcons(isDark ? 'dark' : 'light');
+            renderTasksByCategory(); // থিম চেঞ্জ হলে রি-রেন্ডার
         }
         function updateThemeIcons(theme) {
             sunIcon.classList.toggle('hidden', theme !== 'dark');
             moonIcon.classList.toggle('hidden', theme === 'dark');
         }
 
-        window.onclick = function(event) {
-            if (event.target == editModal) closeEditModal();
-            if (event.target == catEditModal) closeCategoryEditModal();
-            if (event.target == settingsModal) closeSettingsModal();
-        }
+        // অ্যাপ শুরু
+        initApp();
+
     </script>
 </body>
 </html>
