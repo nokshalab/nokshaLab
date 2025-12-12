@@ -3,348 +3,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>নকশা ল্যাব: রিয়েল-টাইম ক্লাউড সিঙ্ক</title>
+    <title>নকশা ল্যাব | ডিজিটাল সার্ভিস পয়েন্ট</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SortableJS (Drag & Drop এর জন্য) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
         
         body {
-            font-family: 'Inter', sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-            /* লাইট মোড: খুব সফট এবং নিউট্রাল ব্যাকগ্রাউন্ড */
-            background-color: #f3f4f6; 
-            color: #1f2937; 
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        /* --- কাস্টম স্ক্রলবার --- */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
-        .dark ::-webkit-scrollbar-thumb { background-color: #475569; }
-        ::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
-
-        /* --- কার্ড স্টাইল (লাইট মোড রি-ডিজাইন) --- */
-        .card-shadow {
-            background-color: #ffffff;
-            /* খুব সফট এবং লেয়ারড শ্যাডো */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid #e5e7eb; /* খুব হালকা বর্ডার */
-            border-radius: 1rem; /* স্মুথ রাউন্ডেড কর্নার */
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* হোভার এফেক্ট কার্ডের জন্য */
-        .card-shadow:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-            border-color: #d1d5db;
-        }
-        
-        .input-style {
-            padding: 0.75rem 1rem;
-            border: 1px solid #e5e7eb; 
-            border-radius: 0.75rem;
-            background-color: #f9fafb; /* ইনপুটের ভেতর হালকা রঙ */
-            transition: all 0.2s ease-in-out;
-            width: 100%;
-            font-size: 0.95rem;
-            color: #1f2937;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
-        }
-        .input-style:focus {
-            outline: none;
-            border-color: #6366f1;
-            background-color: #ffffff;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
-        
-        .modal-overlay {
-            background-color: rgba(17, 24, 39, 0.7); 
-            backdrop-filter: blur(6px);
-            z-index: 100;
-        }
-
-        /* --- সাইডবার লিস্ট আইটেম স্টাইল --- */
-        .category-item {
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            color: #4b5563;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .category-item:hover {
-            background-color: #f3f4f6;
-            color: #111827;
-            transform: translateX(3px);
-        }
-
-        /* --- অ্যাক্টিভ ক্যাটাগরি স্টাইল (লাইট মোড - ক্লিন লুক) --- */
-        .active-category {
-            background-color: #ffffff !important;
-            color: #4f46e5 !important;
-            border: 1px solid #e0e7ff !important;
-            border-left: 4px solid #4f46e5 !important;
-            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1), 0 2px 4px -1px rgba(99, 102, 241, 0.06);
-            font-weight: 600;
-        }
-        .dark .active-category {
-            background-color: rgba(67, 56, 202, 0.2) !important;
-            color: #818cf8 !important;
-            border: 1px solid rgba(99, 102, 241, 0.2) !important;
-            border-left: 4px solid #818cf8 !important;
-            box-shadow: none;
-        }
-
-        /* --- হাইলাইট অ্যানিমেশন --- */
-        @keyframes highlightPulse {
-            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); border-color: #6366f1; transform: scale(1); }
-            50% { box-shadow: 0 0 20px 0 rgba(99, 102, 241, 0.2); border-color: #818cf8; transform: scale(1.01); }
-            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); border-color: transparent; transform: scale(1); }
-        }
-        .highlight-section {
-            animation: highlightPulse 1.5s ease-out;
-            border: 2px solid transparent; 
-            border-radius: 1rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* --- ডার্ক মোড --- */
-        body.dark {
-            background-color: #0f172a;
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
             color: #e2e8f0;
         }
-        .dark .bg-white {
-            background-color: #1e293b; 
-            border-color: #334155;
-            color: #e2e8f0;
-        }
-        .dark .card-shadow {
-            background-color: #1e293b;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-            border: 1px solid #334155;
-        }
-        .dark .input-style, .dark select {
-            background-color: #020617; 
-            border-color: #334155;
-            color: #f8fafc;
-            box-shadow: none;
-        }
-        .dark .input-style:focus {
-            border-color: #818cf8;
-            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
-        }
-        .dark .category-item {
-            color: #cbd5e1;
-        }
-        .dark .category-item:hover {
-            background-color: #334155;
-            color: #f8fafc;
-        }
-        .dark .glass-header {
-            background-color: rgba(15, 23, 42, 0.85);
-            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
-        }
 
-        /* হেডার গ্র্যাডিয়েন্ট */
-        .header-gradient-text {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* --- অ্যানিমেশন এবং ইউটিলিটি --- */
+        .glass-effect {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .dark .header-gradient-text {
+        
+        .gradient-text {
             background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* স্টিকি হেডার গ্লাস এফেক্ট */
-        .glass-header {
-            background-color: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        /* ড্র্যাগ এবং ড্রপ স্টাইল */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #334155;
         }
+        .sortable-drag {
+            cursor: grabbing;
+        }
+        .cursor-grab {
+            cursor: grab;
+        }
+
+        /* কাস্টম স্ক্রলবার */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 10px; }
         
-        /* টেবিল হেডার (লাইট মোড) */
-        .table-header-light {
-            background-color: #f9fafb;
-            border-bottom: 1px solid #f3f4f6;
-            color: #6b7280;
-        }
-        /* টেবিল রো হোভার (লাইট মোড) */
-        .table-row-hover:hover {
-            background-color: #f9fafb;
-        }
+        /* ট্রানজিশন */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Error Banner Animation */
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen flex flex-col">
 
-    <!-- মেইন হেডার (Sticky) -->
-    <header class="sticky top-0 z-50 w-full glass-header transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            
-            <div class="flex flex-col">
-                <h1 class="text-2xl sm:text-3xl font-extrabold header-gradient-text tracking-tight cursor-default">নকশা ল্যাব</h1>
-                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium tracking-wide">রিয়েল-টাইম ক্লাউড সিঙ্ক</p>
-            </div>
-
-            <div class="flex items-center space-x-3">
-                <div class="hidden sm:flex items-center bg-white dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <div id="connection-dot" class="w-2.5 h-2.5 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
-                    <span id="connection-status" class="text-xs font-semibold text-gray-600 dark:text-gray-300">সংযোগ হচ্ছে...</span>
+    <!-- ১. কাস্টমার ভিউ (FRONT END) -->
+    <div id="customer-view" class="flex-grow fade-in hidden">
+        <!-- নেভিগেশন -->
+        <nav class="glass-effect sticky top-0 z-50 border-b border-slate-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16 items-center">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold gradient-text">নকশা ল্যাব</span>
+                    </div>
+                    <div class="hidden md:flex space-x-8">
+                        <a href="#" class="text-gray-300 hover:text-white transition">হোম</a>
+                        <a href="#services" class="text-gray-300 hover:text-white transition">সার্ভিসসমূহ</a>
+                        <a href="#contact" class="text-gray-300 hover:text-white transition">যোগাযোগ</a>
+                    </div>
+                    <!-- অ্যাডমিন লগিন বাটন (লুকানো বা ছোট করে রাখা) -->
+                    <button onclick="showLoginModal()" class="text-xs text-slate-600 hover:text-slate-400">
+                        Admin
+                    </button>
                 </div>
+            </div>
+        </nav>
 
-                <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
-
-                <button onclick="window.toggleTheme()" class="p-2 rounded-full bg-white dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-800/50 border border-gray-200 dark:border-indigo-800 transition shadow-sm" title="থিম পরিবর্তন">
-                    <svg id="sun-icon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    <svg id="moon-icon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                </button>
+        <!-- হিরো সেকশন -->
+        <div class="relative bg-slate-900 overflow-hidden">
+            <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl mb-4">
+                    আপনার ডিজিটাল <span class="gradient-text">সমাধান</span> এখানেই
+                </h1>
+                <p class="mt-4 text-xl text-slate-400 max-w-2xl mx-auto">
+                    পাসপোর্ট, ভিসা, জন্ম নিবন্ধন থেকে শুরু করে সব ধরণের অনলাইন আবেদন ও প্রিন্টিং এর বিশ্বস্ত প্রতিষ্ঠান।
+                </p>
             </div>
         </div>
-    </header>
 
-    <!-- মেইন কন্টেইনার -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- সার্ভিস লিস্ট (কাস্টমাররা শুধু নাম দেখবে) -->
+        <div id="services" class="max-w-7xl mx-auto px-4 py-12">
+            <h2 class="text-3xl font-bold text-center text-white mb-10 border-b border-slate-800 pb-4">আমাদের সেবাসমূহ</h2>
             
-            <!-- বাম পাশ: কন্ট্রোল প্যানেল (Sticky) -->
-            <div class="lg:col-span-4 relative">
-                <div class="sticky top-28 space-y-6"> 
-                    
-                    <!-- ক্যাটাগরি ম্যানেজমেন্ট কার্ড -->
-                    <div class="p-6 rounded-2xl card-shadow">
-                        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-5 flex items-center border-b border-gray-100 dark:border-gray-700 pb-3">
-                            <span class="bg-indigo-50 dark:bg-indigo-900/50 p-2 rounded-lg mr-3 text-indigo-600 dark:text-indigo-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                            </span>
-                            ক্যাটাগরি ম্যানেজমেন্ট
-                        </h2>
-                        
-                        <form id="add-category-form" class="flex gap-2 mb-5">
-                            <input type="text" id="new-category-name" placeholder="নতুন ক্যাটাগরি..." required class="input-style text-sm">
-                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition shadow-lg shadow-indigo-500/20 whitespace-nowrap">যুক্ত করুন</button>
-                        </form>
-                        
-                        <div class="max-h-[250px] overflow-y-auto space-y-2 pr-1 custom-scrollbar" id="category-list-manager">
-                            <!-- ক্যাটাগরি লিস্ট এখানে আসবে -->
-                        </div>
-                    </div>
-
-                    <!-- নতুন কাজ যোগ করার ফর্ম কার্ড -->
-                    <div class="p-6 rounded-2xl card-shadow">
-                        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-5 flex items-center border-b border-gray-100 dark:border-gray-700 pb-3">
-                            <span class="bg-emerald-50 dark:bg-emerald-900/50 p-2 rounded-lg mr-3 text-emerald-600 dark:text-emerald-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            </span>
-                            নতুন কাজ যোগ করুন
-                        </h2>
-                        <form id="add-task-form" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide ml-1">ক্যাটাগরি</label>
-                                <select id="new-task-category" class="input-style w-full text-sm font-medium cursor-pointer" required>
-                                    <!-- ক্যাটাগরি অপশন JS দিয়ে আসবে -->
-                                </select>
-                            </div>
-                            <input type="text" id="new-task-name" placeholder="কাজের নাম" required class="input-style w-full text-sm">
-                            <input type="text" id="new-task-requirements" placeholder="প্রয়োজনীয়তা (সংক্ষেপে)" required class="input-style w-full text-sm">
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="number" id="new-task-price" placeholder="কাস্টমার প্রাইস (৳)" required class="input-style w-full text-sm" min="0">
-                                <input type="number" id="new-task-expense" placeholder="আপনার খরচ (৳)" required class="input-style w-full text-sm" min="0">
-                            </div>
-                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20 mt-2">লিস্টে যোগ করুন</button>
-                        </form>
-                    </div>
-                </div>
+            <div id="public-service-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে সার্ভিস লোড হবে -->
+                <div class="text-center text-slate-500 col-span-full animate-pulse">লোড হচ্ছে...</div>
             </div>
+        </div>
 
-            <!-- ডান পাশ: ক্যাটাগরি ভিত্তিক কাজের তালিকা (Scrollable) -->
-            <div class="lg:col-span-8 space-y-8 pb-32" id="tasks-container">
-                <div class="flex justify-center items-center h-64 text-gray-400">
-                    <svg class="animate-spin h-8 w-8 mr-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    ডাটা লোড হচ্ছে...
-                </div>
+        <!-- ফুটার -->
+        <footer id="contact" class="bg-slate-950 border-t border-slate-800 mt-auto py-8">
+            <div class="max-w-7xl mx-auto px-4 text-center text-slate-400">
+                <p>যোগাযোগ করুন বিস্তারিত জানতে।</p>
+                <p class="mt-2">&copy; ২০২৫ নকশা ল্যাব। সর্বস্বত্ব সংরক্ষিত।</p>
             </div>
+        </footer>
+    </div>
+
+    <!-- ২. লগিন মোডাল (ADMIN GATE) -->
+    <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden backdrop-blur-sm">
+        <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">অ্যাডমিন প্যানেল লগিন</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400">ইমেইল</label>
+                    <input type="email" id="admin-email" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400">পাসওয়ার্ড</label>
+                    <input type="password" id="admin-password" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-500" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition">প্রবেশ করুন</button>
+            </form>
+            <button onclick="hideLoginModal()" class="mt-4 text-sm text-slate-500 hover:text-white w-full text-center">ফিরে যান</button>
         </div>
     </div>
 
-    <!-- এডিট মোডাল পপআপ -->
-    <div id="edit-modal" class="hidden fixed inset-0 flex items-center justify-center p-4 modal-overlay">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-gray-200 dark:border-gray-700 scale-100">
-            <div class="bg-indigo-600 dark:bg-indigo-900 text-white p-5 flex justify-between items-center">
-                <h3 class="text-xl font-bold">কাজ এডিট করুন</h3>
-                <button onclick="window.closeEditModal()" class="text-white/80 hover:text-white transition p-1 rounded-full hover:bg-white/10">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+    <!-- ৩. অ্যাডমিন প্যানেল (BACK END) -->
+    <div id="admin-view" class="flex-grow fade-in hidden">
+        <!-- অ্যাডমিন হেডার -->
+        <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-xl font-bold gradient-text">নকশা ল্যাব (অ্যাডমিন)</h1>
+                    <span class="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full border border-red-500/30">সিকিউর মোড</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleView('dashboard')" class="text-sm font-medium text-white hover:text-indigo-400">ড্যাশবোর্ড</button>
+                    <div class="h-4 w-px bg-slate-600"></div>
+                    <button onclick="toggleView('history')" class="text-sm font-medium text-slate-300 hover:text-indigo-400">হিস্টরি ও লাভ</button>
+                    <div class="h-4 w-px bg-slate-600"></div>
+                    <button onclick="logoutAdmin()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">লগ আউট</button>
+                </div>
             </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto px-4 py-8">
             
-            <form id="edit-task-form" class="p-6 space-y-5">
-                <input type="hidden" id="edit-task-id">
-                
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">ক্যাটাগরি পরিবর্তন</label>
-                    <select id="edit-task-category" class="input-style w-full text-sm">
-                        <!-- অপশন -->
-                    </select>
+            <!-- ট্যাব ১: মেইন ড্যাশবোর্ড (সার্ভিস এডিট) -->
+            <div id="tab-dashboard" class="space-y-8">
+                <!-- কন্ট্রোল প্যানেল -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- ক্যাটাগরি তৈরি -->
+                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                        <h3 class="font-bold text-white mb-4">ক্যাটাগরি ম্যানেজমেন্ট</h3>
+                        <form id="add-category-form" class="flex gap-2">
+                            <input type="text" id="new-cat-name" placeholder="নতুন ক্যাটাগরির নাম" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 rounded-lg text-sm">যোগ</button>
+                        </form>
+                        <div id="admin-cat-list" class="mt-4 space-y-2 max-h-40 overflow-y-auto">
+                            <!-- ড্র্যাগ এবং ড্রপ ক্যাটাগরি -->
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2 text-center">উপরে-নিচে সাজাতে মাউস দিয়ে টানুন</p>
+                    </div>
+
+                    <!-- নতুন কাজ যোগ -->
+                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 lg:col-span-2">
+                        <h3 class="font-bold text-white mb-4">নতুন কাজ যুক্ত করুন</h3>
+                        <form id="add-task-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- ক্যাটাগরি এবং নাম -->
+                            <select id="task-cat-select" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none" required></select>
+                            <input type="text" id="task-name" placeholder="কাজের নাম" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none" required>
+                            
+                            <!-- দাম এবং খরচ -->
+                            <div class="flex gap-2 md:col-span-2">
+                                <input type="number" id="task-price" placeholder="দাম (৳)" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none" required>
+                                <input type="number" id="task-expense" placeholder="খরচ (৳)" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none" required>
+                            </div>
+
+                            <!-- প্রয়োজনীয়তা (Textarea - বড় বক্স) -->
+                            <textarea id="task-req" placeholder="প্রয়োজনীয়তা (বিস্তারিত লিখুন, কাস্টমার দেখবে না)" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none md:col-span-2" rows="3"></textarea>
+                            
+                            <!-- সাবমিট বাটন -->
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg md:col-span-2">লিস্টে যোগ করুন</button>
+                        </form>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">কাজের নাম</label>
-                    <input type="text" id="edit-task-name" required class="input-style w-full">
+                <!-- অ্যাডমিন টাস্ক লিস্ট (ড্র্যাগেবল) -->
+                <div id="admin-tasks-container" class="space-y-6">
+                    <!-- ক্যাটাগরি ভিত্তিক টেবিল রেন্ডার হবে -->
+                </div>
+            </div>
+
+            <!-- ট্যাব ২: হিস্টরি ও হিসাব -->
+            <div id="tab-history" class="hidden space-y-6">
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">কাজের হিস্টরি</h2>
+                        <p class="text-slate-400 text-sm">আপনার সম্পন্ন করা কাজের তালিকা ও লাভের হিসাব</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-slate-400">সর্বমোট লাভ</p>
+                        <p id="total-profit-display" class="text-3xl font-bold text-emerald-400">৳ ০</p>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">প্রয়োজনীয়তা</label>
-                    <textarea id="edit-task-requirements" rows="2" required class="input-style w-full"></textarea>
+                <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                    <table class="min-w-full divide-y divide-slate-700">
+                        <thead class="bg-slate-900">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">তারিখ</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase">কাজের নাম</th>
+                                <th class="px-6 py-3 text-right text-xs font-bold text-slate-400 uppercase">মূল্য</th>
+                                <th class="px-6 py-3 text-right text-xs font-bold text-slate-400 uppercase">লাভ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-slate-700">
+                            <!-- হিস্টরি ডেটা -->
+                        </tbody>
+                    </table>
                 </div>
+            </div>
 
+        </div>
+    </div>
+
+    <!-- নতুন: এরর ওয়ার্নিং ব্যানার -->
+    <div id="error-banner" class="fixed bottom-4 right-4 max-w-sm bg-red-600 border border-red-500 text-white p-4 rounded-xl shadow-2xl hidden z-50 flex items-start space-x-3 slide-up">
+        <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        <div class="flex-1">
+            <h4 class="font-bold text-sm">সংযোগ ত্রুটি!</h4>
+            <p id="error-message" class="text-xs mt-1 text-red-100">সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না। দয়া করে ইন্টারনেট চেক করুন।</p>
+            <button onclick="window.location.reload()" class="mt-2 bg-white text-red-600 px-3 py-1 rounded text-xs font-bold hover:bg-red-50 transition">রিলোড করুন</button>
+        </div>
+        <button onclick="document.getElementById('error-banner').classList.add('hidden')" class="ml-auto text-red-200 hover:text-white">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+
+    <!-- কাজ সম্পন্ন করার মোডাল (লাভ নিশ্চিতকরণ) -->
+    <div id="complete-job-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-700">
+            <h3 class="text-xl font-bold text-white mb-4">কাজ সম্পন্ন করুন</h3>
+            <p id="modal-task-name" class="text-slate-400 text-sm mb-4">...</p>
+            <form id="complete-job-form" class="space-y-4">
+                <input type="hidden" id="modal-task-id">
+                <div>
+                    <label class="text-xs text-slate-500">ফাইনাল মূল্য (টাকা)</label>
+                    <input type="number" id="modal-final-price" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500">আসল খরচ (টাকা)</label>
+                    <input type="number" id="modal-final-expense" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white">
+                </div>
+                <div class="flex gap-3 mt-4">
+                    <button type="button" onclick="closeCompleteModal()" class="flex-1 bg-slate-700 text-white py-2 rounded">বাতিল</button>
+                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-bold">সেভ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- কাজ এডিট করার মোডাল -->
+    <div id="edit-task-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
+            <h3 class="text-xl font-bold text-white mb-4">কাজ এডিট করুন</h3>
+            <form id="edit-task-form" class="space-y-4">
+                <input type="hidden" id="edit-modal-task-id">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400">কাজের নাম</label>
+                    <input type="text" id="edit-task-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-indigo-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400">প্রয়োজনীয়তা</label>
+                    <!-- Textarea for editing Requirements -->
+                    <textarea id="edit-task-req" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-indigo-500" rows="4"></textarea>
+                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">গ্রাহকের দাম (৳)</label>
-                        <input type="number" id="edit-task-price" required class="input-style w-full" min="0">
+                        <label class="block text-sm font-medium text-slate-400">দাম (৳)</label>
+                        <input type="number" id="edit-task-price" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-indigo-500" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">পূর্ব খরচ (৳)</label>
-                        <input type="number" id="edit-task-expense" required class="input-style w-full" min="0">
+                        <label class="block text-sm font-medium text-slate-400">খরচ (৳)</label>
+                        <input type="number" id="edit-task-expense" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-indigo-500" required>
                     </div>
                 </div>
-
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-gray-700 mt-2">
-                    <button type="button" onclick="window.closeEditModal()" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-5 rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-600">বাতিল</button>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-xl transition shadow-lg shadow-indigo-500/20">আপডেট করুন</button>
+                <div class="flex gap-3 mt-4">
+                    <button type="button" onclick="closeEditTaskModal()" class="flex-1 bg-slate-700 text-white py-2 rounded">বাতিল</button>
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold">আপডেট করুন</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- ক্যাটাগরি এডিট মোডাল -->
-    <div id="category-edit-modal" class="hidden fixed inset-0 flex items-center justify-center p-4 modal-overlay">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-gray-200 dark:border-gray-700">
-             <div class="bg-gray-800 dark:bg-gray-950 text-white p-4 flex justify-between items-center">
-                <h3 class="text-lg font-bold">ক্যাটাগরি নাম পরিবর্তন</h3>
-                <button onclick="window.closeCategoryEditModal()" class="text-white/80 hover:text-white transition p-1 rounded-full hover:bg-white/10">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <form id="edit-category-form" class="p-6 space-y-4">
-                <input type="hidden" id="edit-category-id">
-                <input type="text" id="edit-category-name-input" class="input-style w-full" required>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-indigo-500/20">সেভ করুন</button>
-            </form>
-        </div>
-    </div>
-
+    <!-- Firebase Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- ফায়ারবেস ইনিশিয়ালাইজেশন (আপনার কনফিগ) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDaa1NZUI498mN7Z9WWGVyzaiwmNDB_cOU",
             authDomain: "work-list-acc83.firebaseapp.com",
@@ -353,406 +315,439 @@
             messagingSenderId: "365350979318",
             appId: "1:365350979318:web:5a3e0135a1581f89330ed7"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        const appId = 'noksha-lab-live'; 
+        const appId = 'noksha-lab-live';
 
-        // --- গ্লোবাল ভেরিয়েবল ---
-        const THEME_KEY = 'noksha_lab_theme';
+        // State
         let appData = { categories: [], tasks: [] };
-        let activeCategoryId = null;
-        let currentUser = null;
-
-        // ডিফল্ট ডেটা (যদি নতুন শুরু হয়)
-        const defaultData = {
-            categories: [
-                { id: 'cat_1', name: 'পাসপোর্ট ও ভিসা সার্ভিস' },
-                { id: 'cat_2', name: 'জন্ম ও মৃত্যু নিবন্ধন' },
-                { id: 'cat_3', name: 'অনলাইন আবেদন ও ফরম পূরণ' },
-                { id: 'cat_4', name: 'প্রিন্টিং, স্ক্যানিং ও স্টুডিও' },
-                { id: 'cat_5', name: 'ডিজিটাল মার্কেটিং ও বুস্টিং' }
-            ],
-            tasks: [
-                { id: 1, categoryId: 'cat_1', name: "নতুন ই-পাসপোর্ট আবেদন (১০ বছর)", requirements: "NID, বিদ্যুৎ বিল, ছবি, পেশার প্রমাণ", customerPrice: 500, ownerExpense: 100 },
-                { id: 2, categoryId: 'cat_1', name: "পাসপোর্ট রি-ইস্যু / ভুল সংশোধন", requirements: "পুরাতন পাসপোর্ট কপি, সংশোধনের প্রমাণপত্র", customerPrice: 300, ownerExpense: 50 },
-                { id: 3, categoryId: 'cat_2', name: "নতুন জন্ম নিবন্ধন আবেদন (শিশু)", requirements: "টিকা কার্ড, বাবা-মার NID, ছবি", customerPrice: 200, ownerExpense: 30 },
-                { id: 4, categoryId: 'cat_5', name: "ফেসবুক পেজ বুস্টিং (১০ ডলার)", requirements: "পোস্ট লিংক, ইমেজ, পেমেন্ট ক্লিয়ারেন্স", customerPrice: 1500, ownerExpense: 1250 }
-            ]
-        };
+        let historyData = [];
+        let isAdmin = false;
 
         // --- DOM Elements ---
-        const tasksContainer = document.getElementById('tasks-container');
-        const categoryListManager = document.getElementById('category-list-manager');
-        const newTaskCategorySelect = document.getElementById('new-task-category');
-        const editTaskCategorySelect = document.getElementById('edit-task-category');
-        const connectionDot = document.getElementById('connection-dot');
-        const connectionStatus = document.getElementById('connection-status');
-        const sunIcon = document.getElementById('sun-icon');
-        const moonIcon = document.getElementById('moon-icon');
+        const customerView = document.getElementById('customer-view');
+        const adminView = document.getElementById('admin-view');
+        const authModal = document.getElementById('auth-modal');
+        const publicServiceContainer = document.getElementById('public-service-container');
+        const adminTasksContainer = document.getElementById('admin-tasks-container');
+        const adminCatList = document.getElementById('admin-cat-list');
+        const taskCatSelect = document.getElementById('task-cat-select');
+        const historyTableBody = document.getElementById('history-table-body');
+        const totalProfitDisplay = document.getElementById('total-profit-display');
+        const errorBanner = document.getElementById('error-banner');
+        const errorMessage = document.getElementById('error-message');
 
-        // --- Auth & Realtime Sync Setup ---
-        async function initApp() {
-            loadTheme();
-            
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } catch (customTokenError) {
-                        console.warn("Custom token failed, trying anonymous:", customTokenError);
-                        await signInAnonymously(auth);
-                    }
+        // --- Error Handling Function ---
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorBanner.classList.remove('hidden');
+            // ৫ সেকেন্ড পর অটোমেটিক হাইড করার অপশন রাখা যেতে পারে, তবে কানেকশন এরর হলে ম্যানুয়ালি ক্লোজ করাই ভালো
+        }
+
+        // --- Auth Setup ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // ইউজার লগইন অবস্থায় আছে (অ্যানোনিমাস বা অ্যাডমিন)
+                
+                if (!user.isAnonymous) {
+                    // অ্যাডমিন লগইন
+                    isAdmin = true;
+                    showAdminPanel();
+                    loadHistoryData(); // প্রাইভেট ডাটা
                 } else {
-                    await signInAnonymously(auth);
+                    // কাস্টমার (অ্যানোনিমাস)
+                    isAdmin = false;
+                    showCustomerView();
                 }
-            } catch (error) {
-                console.error("Auth Error:", error);
-                showStatus("লগইন সমস্যা!", false);
+                
+                // পাবলিক ডাটা লোড
+                loadPublicData(); 
+            } else {
+                // ইউজার লগইন নেই -> অ্যানোনিমাস লগইন করাই
+                signInAnonymously(auth).catch((error) => {
+                    console.error("Anonymous auth failed", error);
+                    showError("অথেন্টিকেশন সমস্যা হয়েছে। পেজটি রিলোড দিন।");
+                });
+            }
+        });
+
+        // --- Data Loading ---
+        let unsubscribePublic = null; 
+
+        function loadPublicData() {
+            if (unsubscribePublic) {
+                unsubscribePublic();
             }
 
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'noksha_lab', 'main_list');
-                    
-                    onSnapshot(docRef, (docSnap) => {
-                        if (docSnap.exists()) {
-                            appData = docSnap.data();
-                            showStatus("অনলাইন (সক্রিয়)", true);
-                        } else {
-                            appData = defaultData;
-                            setDoc(docRef, defaultData);
-                            showStatus("নতুন ডেটা তৈরি হচ্ছে...", true);
-                        }
-                        renderAll();
-                    }, (error) => {
-                        console.error("Sync Error:", error);
-                        if (error.code === 'permission-denied') {
-                            showStatus("রুলস এরর!", false);
-                            alert("দয়া করে ফায়ারবেস কনসোলে সঠিক রুলস সেট করুন।");
-                        } else {
-                            showStatus("সিঙ্ক সমস্যা!", false);
-                        }
-                    });
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'noksha_lab', 'main_list');
+            
+            unsubscribePublic = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    appData = docSnap.data();
+                    renderCustomerUI();
+                    if (isAdmin) renderAdminUI();
+                    // ডাটা সফলভাবে লোড হলে এরর ব্যানার লুকিয়ে ফেলা ভালো
+                    errorBanner.classList.add('hidden');
+                } else {
+                    appData = { categories: [], tasks: [] };
+                    if(isAdmin) setDoc(docRef, appData);
+                }
+            }, (error) => {
+                console.error("Data Load Error:", error);
+                showError("ডেটা লোড করতে সমস্যা হচ্ছে। দয়া করে ইন্টারনেট সংযোগ চেক করুন।");
+            });
+        }
+
+        function loadHistoryData() {
+            // ৬ স্টেপের সঠিক পাথ ব্যবহার করা হয়েছে
+            const docRef = doc(db, 'artifacts', appId, 'private', 'history', 'logs', 'sales_log');
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    historyData = docSnap.data().logs || [];
+                    renderHistoryUI();
+                }
+            }, (error) => {
+                console.error("History Load Error:", error);
+                if (error.code === 'permission-denied') {
+                    showError("ডাটাবেস পারমিশন এরর! দয়া করে ফায়ারবেস রুলস আপডেট করুন।");
+                } else {
+                    showError("হিস্টরি লোড করতে ব্যর্থ।");
                 }
             });
         }
 
-        async function saveDataToCloud() {
-            if (!currentUser) return;
+        // --- UI Rendering: Customer (Clean) ---
+        function renderCustomerUI() {
+            publicServiceContainer.innerHTML = '';
             
-            showStatus("সেভ হচ্ছে...", 'pending');
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'noksha_lab', 'main_list');
-                await setDoc(docRef, appData);
-            } catch (error) {
-                console.error("Save Error:", error);
-                if (error.code === 'permission-denied') {
-                    showStatus("রুলস এরর!", false);
-                } else {
-                    showStatus("সেভ ব্যর্থ হয়েছে!", false);
-                }
-            }
-        }
-
-        function showStatus(msg, status) {
-            connectionStatus.textContent = msg;
-            connectionDot.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500', 'animate-pulse');
-            
-            if (status === true) { 
-                connectionDot.classList.add('bg-green-500');
-                connectionStatus.classList.remove('text-red-500');
-                connectionStatus.classList.add('text-green-600', 'dark:text-green-400');
-            } else if (status === false) { 
-                connectionDot.classList.add('bg-red-500');
-                connectionStatus.classList.add('text-red-500');
-            } else { 
-                connectionDot.classList.add('bg-yellow-500', 'animate-pulse');
-                connectionStatus.classList.remove('text-red-500', 'text-green-600');
-            }
-        }
-
-        // --- UI রেন্ডারিং ফাংশন ---
-        function renderAll() {
-            renderCategoryOptions();
-            renderCategoryManager();
-            renderTasksByCategory();
-        }
-
-        function renderCategoryOptions() {
-            const optionsHTML = appData.categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
-            newTaskCategorySelect.innerHTML = optionsHTML;
-            editTaskCategorySelect.innerHTML = optionsHTML;
-        }
-
-        function renderCategoryManager() {
-            if (appData.categories.length === 0) {
-                categoryListManager.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">কোনো ক্যাটাগরি নেই</p>';
+            if(appData.categories.length === 0) {
+                publicServiceContainer.innerHTML = '<p class="text-center text-slate-500 col-span-full">কোনো সার্ভিস পাওয়া যায়নি।</p>';
                 return;
             }
 
-            categoryListManager.innerHTML = appData.categories.map(cat => {
-                const isActive = cat.id === activeCategoryId;
-                const activeClass = isActive 
-                    ? 'active-category' 
-                    : 'category-item';
-                
-                const textClass = isActive
-                    ? 'text-indigo-700 dark:text-indigo-400'
-                    : 'text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400';
-
-                return `
-                <div class="group flex justify-between items-center p-3 rounded-lg cursor-pointer mb-2 ${activeClass}" onclick="window.scrollToCategory('${cat.id}')">
-                    <span class="text-sm ${textClass} truncate flex-1 transition font-medium">${cat.name}</span>
-                    <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition duration-200" onclick="event.stopPropagation()">
-                        <button onclick="window.openCategoryEditModal('${cat.id}')" class="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/50 p-1.5 rounded-lg transition" title="নাম পরিবর্তন">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </button>
-                        <button onclick="window.deleteCategory('${cat.id}')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 p-1.5 rounded-lg transition" title="মুছে ফেলুন">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
-                </div>
-            `}).join('');
-        }
-
-        function renderTasksByCategory() {
-            tasksContainer.innerHTML = '';
-
             appData.categories.forEach(cat => {
-                const catTasks = appData.tasks.filter(task => task.categoryId === cat.id);
+                const catTasks = appData.tasks.filter(t => t.categoryId === cat.id);
+                if (catTasks.length === 0) return;
+
+                const card = document.createElement('div');
+                card.className = 'bg-slate-800 rounded-2xl border border-slate-700 p-6 hover:border-indigo-500/50 transition duration-300';
                 
-                const section = document.createElement('div');
-                section.id = `cat-section-${cat.id}`; 
-                
-                // লাইট মোড: সাদা বর্ডার এবং খুব সফট শ্যাডো
-                section.className = 'bg-white dark:bg-gray-800 rounded-2xl card-shadow overflow-hidden transition-all duration-300 border border-gray-100 dark:border-gray-700 mb-8';
+                let taskListHtml = catTasks.map(task => `
+                    <li class="flex items-center text-slate-300 mb-2">
+                        <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        ${task.name}
+                    </li>
+                `).join('');
 
-                // --- পরিবর্তন: লাইট মোডে ক্লিন হেডার, ডার্ক মোডে আগের মতো ---
-                const isDark = document.body.classList.contains('dark');
-                
-                const headerClass = isDark
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-900 dark:to-purple-900 p-4 text-white shadow-sm' 
-                    : 'bg-white p-5 border-b border-gray-100';
-
-                const titleClass = isDark
-                    ? 'text-white'
-                    : 'text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600';
-
-                const countBadgeClass = isDark
-                    ? 'bg-white/20 dark:bg-black/30 text-white'
-                    : 'bg-indigo-50 text-indigo-600 border border-indigo-100';
-
-                const header = `
-                    <div class="${headerClass} flex justify-between items-center transition-colors duration-300">
-                        <h3 class="text-lg font-bold flex items-center tracking-wide ${isDark ? '' : 'text-gray-800'}">
-                            <span class="${countBadgeClass} px-2.5 py-0.5 rounded-md mr-3 text-xs font-mono font-bold">
-                                ${catTasks.length}
-                            </span>
-                            <span class="${titleClass}">
-                                ${cat.name}
-                            </span>
-                        </h3>
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold text-white mb-4 pb-2 border-b border-slate-700">${cat.name}</h3>
+                    <ul class="space-y-1">
+                        ${taskListHtml}
+                    </ul>
+                    <div class="mt-6 pt-4 border-t border-slate-700/50 text-center">
+                        <a href="#contact" class="text-sm text-indigo-400 hover:text-indigo-300 font-medium">বিস্তারিত জানতে কল করুন</a>
                     </div>
                 `;
+                publicServiceContainer.appendChild(card);
+            });
+        }
 
-                let tableHTML = '';
-                if (catTasks.length > 0) {
-                    tableHTML = `
+        // --- UI Rendering: Admin (Detailed & Sortable) ---
+        function renderAdminUI() {
+            // ১. ক্যাটাগরি লিস্ট
+            adminCatList.innerHTML = appData.categories.map(cat => `
+                <div class="bg-slate-700 p-2 rounded flex justify-between items-center cursor-move sortable-cat-item" data-id="${cat.id}">
+                    <span class="text-sm font-bold text-white">${cat.name}</span>
+                    <button onclick="window.deleteCategory('${cat.id}')" class="text-red-400 hover:text-red-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+
+            // ২. ড্রপডাউন আপডেট
+            taskCatSelect.innerHTML = appData.categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+
+            // ৩. টাস্ক লিস্ট
+            adminTasksContainer.innerHTML = '';
+            appData.categories.forEach(cat => {
+                const catTasks = appData.tasks.filter(t => t.categoryId === cat.id);
+                
+                const section = document.createElement('div');
+                section.className = 'bg-slate-800 rounded-xl border border-slate-700 overflow-hidden';
+                
+                const tbodyId = `sortable-tasks-${cat.id}`;
+                
+                section.innerHTML = `
+                    <div class="bg-slate-900 p-3 border-b border-slate-700 flex justify-between">
+                        <h3 class="font-bold text-indigo-400">${cat.name}</h3>
+                        <span class="text-xs text-slate-500 bg-slate-800 px-2 rounded">${catTasks.length} টি কাজ</span>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-                            <thead class="bg-gray-50/80 dark:bg-gray-800/50">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-slate-800/50 text-slate-400">
                                 <tr>
-                                    <th class="px-5 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/4">কাজের নাম</th>
-                                    <th class="px-5 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/4 hidden md:table-cell">প্রয়োজনীয়তা</th>
-                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">দাম</th>
-                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">লাভ</th>
-                                    <th class="px-5 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[100px]">অ্যাকশন</th>
+                                    <th class="px-4 py-2 text-left">নাম</th>
+                                    <th class="px-4 py-2 text-right">খরচ</th>
+                                    <th class="px-4 py-2 text-right">দাম</th>
+                                    <th class="px-4 py-2 text-right">লাভ</th>
+                                    <th class="px-4 py-2 text-center">অ্যাকশন</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700/50">
+                            <tbody id="${tbodyId}" class="divide-y divide-slate-700" data-cat-id="${cat.id}">
                                 ${catTasks.map(task => {
                                     const profit = task.customerPrice - task.ownerExpense;
-                                    const profitColor = profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400';
                                     return `
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-indigo-900/10 transition duration-150 group">
-                                        <td class="px-5 py-4 text-sm font-medium text-gray-700 dark:text-gray-200">${task.name}</td>
-                                        <td class="px-5 py-4 text-xs text-gray-500 dark:text-gray-400 hidden md:table-cell leading-relaxed">${task.requirements}</td>
-                                        <td class="px-5 py-4 text-right text-sm font-bold text-indigo-600 dark:text-indigo-400">৳${task.customerPrice}</td>
-                                        <td class="px-5 py-4 text-right text-sm font-extrabold ${profitColor}">৳${profit}</td>
-                                        <td class="px-5 py-4 text-center flex justify-center space-x-2 opacity-60 group-hover:opacity-100 transition">
-                                            <button onclick="window.openEditModal(${task.id})" class="text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 p-2 rounded-lg transition" title="এডিট">
-                                                <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
-                                            </button>
-                                            <button onclick="window.deleteTask(${task.id})" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 p-2 rounded-lg transition" title="ডিলিট">
-                                                <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                                            </button>
+                                    <tr class="hover:bg-slate-700/50 cursor-grab" data-task-id="${task.id}">
+                                        <td class="px-4 py-2 text-white">
+                                            <div class="font-medium">${task.name}</div>
+                                            <div class="text-xs text-slate-500">${task.requirements}</div>
+                                        </td>
+                                        <td class="px-4 py-2 text-right text-slate-300">৳${task.ownerExpense}</td>
+                                        <td class="px-4 py-2 text-right text-indigo-300 font-bold">৳${task.customerPrice}</td>
+                                        <td class="px-4 py-2 text-right text-emerald-400 font-bold">৳${profit}</td>
+                                        <td class="px-4 py-2 text-center space-x-2">
+                                            <button onclick="window.initCompleteJob('${task.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-xs" title="কাজ শেষ ও লাভ জমা">✓</button>
+                                            <button onclick="window.openEditTaskModal('${task.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs" title="এডিট">✎</button>
+                                            <button onclick="window.deleteTask('${task.id}')" class="text-red-400 hover:text-red-300">🗑</button>
                                         </td>
                                     </tr>
-                                    `;
+                                    `
                                 }).join('')}
                             </tbody>
                         </table>
                     </div>
-                    `;
-                } else {
-                    tableHTML = `<div class="py-12 text-center text-gray-400 dark:text-gray-500 text-sm flex flex-col items-center">
-                        <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-full mb-3">
-                            <svg class="w-6 h-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                        </div>
-                        এই ক্যাটাগরিতে এখনো কোনো কাজ যুক্ত করা হয়নি
-                    </div>`;
-                }
+                `;
+                adminTasksContainer.appendChild(section);
 
-                section.innerHTML = header + tableHTML;
-                tasksContainer.appendChild(section);
+                new Sortable(document.getElementById(tbodyId), {
+                    group: 'tasks',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: function (evt) {
+                        handleTaskSort(evt.item.dataset.taskId, evt.to.dataset.catId);
+                    }
+                });
+            });
+
+            new Sortable(adminCatList, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: function (evt) {
+                    // Future Category Reorder Logic
+                }
             });
         }
 
-        // --- উইন্ডো গ্লোবাল ফাংশনস (HTML onclick এর জন্য) ---
-        window.scrollToCategory = function(catId) {
-            const element = document.getElementById(`cat-section-${catId}`);
-            if (element) {
-                activeCategoryId = catId;
-                renderCategoryManager(); 
+        // --- History Logic ---
+        function renderHistoryUI() {
+            historyTableBody.innerHTML = '';
+            let totalProfit = 0;
 
-                const headerOffset = 100;
-                const elementPosition = element.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            const sortedLogs = [...historyData].reverse();
 
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: "smooth"
-                });
-                
-                element.classList.remove('highlight-section');
-                void element.offsetWidth; 
-                element.classList.add('highlight-section');
-                setTimeout(() => element.classList.remove('highlight-section'), 3000);
-            }
-        };
+            sortedLogs.forEach(log => {
+                totalProfit += log.profit;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-3 whitespace-nowrap text-slate-300">${new Date(log.date).toLocaleDateString('bn-BD')}</td>
+                    <td class="px-6 py-3 text-slate-200 font-medium">${log.taskName}</td>
+                    <td class="px-6 py-3 text-right text-slate-300">৳${log.price}</td>
+                    <td class="px-6 py-3 text-right text-emerald-400 font-bold">+৳${log.profit}</td>
+                `;
+                historyTableBody.appendChild(row);
+            });
 
-        window.deleteCategory = function(catId) {
-            const hasTasks = appData.tasks.some(t => t.categoryId === catId);
-            if (hasTasks && !confirm("সতর্কতা: ক্যাটাগরি ডিলিট করলে এর ভেতরের কাজগুলোও মুছে যাবে!")) return;
-            if (!hasTasks && !confirm("মুছে ফেলতে চান?")) return;
+            totalProfitDisplay.textContent = `৳ ${totalProfit.toLocaleString('bn-BD')}`;
+        }
+
+        // --- Complete Job Logic ---
+        window.initCompleteJob = function(taskId) {
+            const task = appData.tasks.find(t => t.id == taskId);
+            if(!task) return;
             
-            appData.categories = appData.categories.filter(c => c.id !== catId);
-            appData.tasks = appData.tasks.filter(t => t.categoryId !== catId);
-            if(activeCategoryId === catId) activeCategoryId = null; 
-            saveDataToCloud();
-        };
+            document.getElementById('modal-task-id').value = task.id;
+            document.getElementById('modal-task-name').textContent = task.name;
+            document.getElementById('modal-final-price').value = task.customerPrice;
+            document.getElementById('modal-final-expense').value = task.ownerExpense;
+            
+            document.getElementById('complete-job-modal').classList.remove('hidden');
+        }
 
-        window.deleteTask = function(id) {
-            if (confirm("স্থায়ীভাবে মুছে ফেলতে চান?")) {
-                appData.tasks = appData.tasks.filter(t => t.id !== id);
-                saveDataToCloud();
+        document.getElementById('complete-job-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const taskId = document.getElementById('modal-task-id').value;
+            const price = parseInt(document.getElementById('modal-final-price').value);
+            const expense = parseInt(document.getElementById('modal-final-expense').value);
+            const taskName = document.getElementById('modal-task-name').textContent;
+            
+            const profit = price - expense;
+            const newLog = {
+                date: new Date().toISOString(),
+                taskId: taskId,
+                taskName: taskName,
+                price: price,
+                expense: expense,
+                profit: profit
+            };
+
+            const docRef = doc(db, 'artifacts', appId, 'private', 'history', 'logs', 'sales_log');
+            
+            try {
+                const docSnap = await getDoc(docRef);
+                if(docSnap.exists()) {
+                    await updateDoc(docRef, { logs: arrayUnion(newLog) });
+                } else {
+                    await setDoc(docRef, { logs: [newLog] });
+                }
+                alert("হিস্টরিতে সফলভাবে যুক্ত হয়েছে!");
+                window.closeCompleteModal();
+            } catch(err) {
+                console.error(err);
+                showError("হিস্টরি সেভ করতে ব্যর্থ হয়েছে।");
             }
-        };
+        });
 
-        window.openEditModal = function(id) {
-            const task = appData.tasks.find(t => t.id === id);
+        // --- Edit Task Logic ---
+        window.openEditTaskModal = function(taskId) {
+            const task = appData.tasks.find(t => t.id == taskId);
             if (!task) return;
-            document.getElementById('edit-task-id').value = task.id;
-            document.getElementById('edit-task-category').value = task.categoryId;
+
+            document.getElementById('edit-modal-task-id').value = task.id;
             document.getElementById('edit-task-name').value = task.name;
-            document.getElementById('edit-task-requirements').value = task.requirements;
+            document.getElementById('edit-task-req').value = task.requirements || '';
             document.getElementById('edit-task-price').value = task.customerPrice;
             document.getElementById('edit-task-expense').value = task.ownerExpense;
-            document.getElementById('edit-modal').classList.remove('hidden');
-        };
 
-        window.openCategoryEditModal = function(id) {
-            const cat = appData.categories.find(c => c.id === id);
-            if (!cat) return;
-            document.getElementById('edit-category-id').value = id;
-            document.getElementById('edit-category-name-input').value = cat.name;
-            document.getElementById('category-edit-modal').classList.remove('hidden');
-        };
+            document.getElementById('edit-task-modal').classList.remove('hidden');
+        }
 
-        window.closeEditModal = function() { document.getElementById('edit-modal').classList.add('hidden'); };
-        window.closeCategoryEditModal = function() { document.getElementById('category-edit-modal').classList.add('hidden'); };
+        document.getElementById('edit-task-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const taskId = document.getElementById('edit-modal-task-id').value;
+            const task = appData.tasks.find(t => t.id == taskId);
 
-        // --- ইভেন্ট লিসেনারস (Form Submission) ---
+            if (task) {
+                task.name = document.getElementById('edit-task-name').value;
+                task.requirements = document.getElementById('edit-task-req').value;
+                task.customerPrice = parseInt(document.getElementById('edit-task-price').value);
+                task.ownerExpense = parseInt(document.getElementById('edit-task-expense').value);
+
+                saveData(); // Save to Firestore
+                renderAdminUI(); // Update UI
+                window.closeEditTaskModal();
+            }
+        });
+
+        // --- Drag & Drop Handler ---
+        function handleTaskSort(taskId, newCatId) {
+            const task = appData.tasks.find(t => t.id == taskId);
+            if(task && task.categoryId !== newCatId) {
+                task.categoryId = newCatId;
+                saveData();
+            }
+        }
+
+        // --- Core Functions ---
+        async function saveData() {
+            if (!isAdmin) return;
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'noksha_lab', 'main_list');
+            try {
+                await setDoc(docRef, appData);
+            } catch (err) {
+                console.error("Save Error:", err);
+                showError("ডেটা সেভ করতে সমস্যা হয়েছে।");
+            }
+        }
+
+        window.deleteCategory = function(id) {
+            if(!confirm("ক্যাটাগরিটি ডিলিট করবেন?")) return;
+            appData.categories = appData.categories.filter(c => c.id !== id);
+            saveData();
+        }
+
+        window.deleteTask = function(id) {
+            if(!confirm("কাজটি ডিলিট করবেন?")) return;
+            appData.tasks = appData.tasks.filter(t => t.id != id);
+            saveData();
+        }
+
+        // --- Form Handlers ---
         document.getElementById('add-category-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const name = document.getElementById('new-category-name').value.trim();
-            if (!name) return;
+            const name = document.getElementById('new-cat-name').value;
             appData.categories.push({ id: 'cat_' + Date.now(), name: name });
-            document.getElementById('new-category-name').value = '';
-            saveDataToCloud();
+            document.getElementById('new-cat-name').value = '';
+            saveData();
         });
 
         document.getElementById('add-task-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const catId = document.getElementById('new-task-category').value;
-            const name = document.getElementById('new-task-name').value.trim();
-            const req = document.getElementById('new-task-requirements').value.trim();
-            const price = parseInt(document.getElementById('new-task-price').value, 10) || 0;
-            const expense = parseInt(document.getElementById('new-task-expense').value, 10) || 0;
+            const catId = document.getElementById('task-cat-select').value;
+            const name = document.getElementById('task-name').value;
+            const req = document.getElementById('task-req').value;
+            const price = parseInt(document.getElementById('task-price').value);
+            const expense = parseInt(document.getElementById('task-expense').value);
 
-            if (!catId || !name) return;
-            appData.tasks.push({ id: Date.now(), categoryId: catId, name: name, requirements: req, customerPrice: price, ownerExpense: expense });
+            const newTask = {
+                id: Date.now(),
+                categoryId: catId,
+                name: name,
+                requirements: req,
+                customerPrice: price,
+                ownerExpense: expense
+            };
+            appData.tasks.push(newTask);
             
-            document.getElementById('new-task-name').value = '';
-            document.getElementById('new-task-requirements').value = '';
-            document.getElementById('new-task-price').value = '';
-            document.getElementById('new-task-expense').value = '';
-            document.getElementById('new-task-name').focus();
+            document.getElementById('task-name').value = '';
+            document.getElementById('task-req').value = '';
+            saveData();
+        });
+
+        // --- Auth Functions (Exposed to Window) ---
+        window.showLoginModal = () => authModal.classList.remove('hidden');
+        window.hideLoginModal = () => authModal.classList.add('hidden');
+        window.closeCompleteModal = () => document.getElementById('complete-job-modal').classList.add('hidden');
+        window.closeEditTaskModal = () => document.getElementById('edit-task-modal').classList.add('hidden');
+        
+        window.toggleView = (viewName) => {
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-history').classList.add('hidden');
+            document.getElementById(`tab-${viewName}`).classList.remove('hidden');
+        };
+
+        window.logoutAdmin = () => {
+            signOut(auth).then(() => {
+                alert("লগ আউট সফল হয়েছে");
+                location.reload();
+            });
+        };
+
+        // Login Logic
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const pass = document.getElementById('admin-password').value;
             
-            saveDataToCloud();
+            signInWithEmailAndPassword(auth, email, pass)
+                .then(() => {
+                    hideLoginModal();
+                })
+                .catch((error) => {
+                    alert("লগিন ব্যর্থ: " + error.message);
+                });
         });
 
-        document.getElementById('edit-task-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const id = parseInt(document.getElementById('edit-task-id').value, 10);
-            const task = appData.tasks.find(t => t.id === id);
-            if (task) {
-                task.categoryId = document.getElementById('edit-task-category').value;
-                task.name = document.getElementById('edit-task-name').value.trim();
-                task.requirements = document.getElementById('edit-task-requirements').value.trim();
-                task.customerPrice = parseInt(document.getElementById('edit-task-price').value, 10) || 0;
-                task.ownerExpense = parseInt(document.getElementById('edit-task-expense').value, 10) || 0;
-                saveDataToCloud();
-                window.closeEditModal();
-            }
-        });
-
-        document.getElementById('edit-category-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-category-id').value;
-            const newName = document.getElementById('edit-category-name-input').value.trim();
-            const cat = appData.categories.find(c => c.id === id);
-            if (cat && newName) {
-                cat.name = newName;
-                saveDataToCloud();
-                window.closeCategoryEditModal();
-            }
-        });
-
-        // --- থিম লজিক ---
-        function loadTheme() {
-            const saved = localStorage.getItem(THEME_KEY) || 'light';
-            document.body.classList.toggle('dark', saved === 'dark');
-            updateThemeIcons(saved);
-            renderTasksByCategory(); // রি-রেন্ডার করা যাতে স্টাইল আপডেট হয়
+        // View Switchers
+        function showAdminPanel() {
+            customerView.classList.add('hidden');
+            adminView.classList.remove('hidden');
         }
-        window.toggleTheme = function() {
-            const isDark = document.body.classList.toggle('dark');
-            localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
-            updateThemeIcons(isDark ? 'dark' : 'light');
-            renderTasksByCategory(); // থিম চেঞ্জ হলে রি-রেন্ডার
+        function showCustomerView() {
+            customerView.classList.remove('hidden');
+            adminView.classList.add('hidden');
         }
-        function updateThemeIcons(theme) {
-            sunIcon.classList.toggle('hidden', theme !== 'dark');
-            moonIcon.classList.toggle('hidden', theme === 'dark');
-        }
-
-        // অ্যাপ শুরু
-        initApp();
 
     </script>
 </body>
