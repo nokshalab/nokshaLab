@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="./logo.png">
-    <title>B-Baria Telecom - বি-বাড়িয়া টেলিকম</title>
+    <title>B-Baria Telecom - বি-বাড়িয়া টেলিকম</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -83,6 +83,17 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Drag and Drop Styles */
+        .draggable-item {
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        .draggable-item.dragging {
+            opacity: 0.5;
+            background: #334155 !important;
+            border: 2px dashed #3b82f6;
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -92,7 +103,7 @@
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-3 cursor-pointer" onclick="showSection('customer')">
                 <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                    <i class="fa-solid"><img src="./logo.png"></i>
+                    <i class="fa-solid fa-mobile-screen-button"></i>
                 </div>
                 <h1 class="text-2xl font-bold tracking-wide text-white">B - <span class="text-blue-500">Baria</span></h1>
             </div>
@@ -131,7 +142,7 @@
         <section id="section-customer" class="fade-in">
             <div class="text-center mb-10">
                 <h2 class="text-3xl font-bold text-white mb-2">আমাদের সার্ভিসসমূহ</h2>
-                <p class="text-gray-400">আপনার প্রয়োজনীয় সেবাটি বেছে নিন এবং অর্ডার করুন</p>
+                <p class="text-gray-400">আপনার প্রয়োজনীয় সেবাটি বেছে নিন এবং অর্ডার করুন</p>
             </div>
 
             <div class="max-w-xl mx-auto mb-8 relative">
@@ -141,8 +152,8 @@
 
             <div id="customer-services-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  <div class="col-span-full text-center text-gray-500 py-10">
-                    <i class="fa-solid fa-box-open text-4xl mb-3 opacity-50"></i>
-                    <p>কোনো সার্ভিস লোড হয়নি। দয়া করে অপেক্ষা করুন অথবা এডমিন প্যানেল চেক করুন।</p>
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-3 text-blue-500"></i>
+                    <p>ডাটা লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</p>
                  </div>
             </div>
         </section>
@@ -156,8 +167,8 @@
                 </div>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-gray-400 text-sm mb-1">পাসওয়ার্ড</label>
-                        <input type="password" id="admin-password" class="w-full bg-dark-900 border border-gray-600 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none" placeholder="পাসওয়ার্ড দিন">
+                        <label class="block text-gray-400 text-sm mb-1">পাসওয়ার্ড</label>
+                        <input type="password" id="admin-password" class="w-full bg-dark-900 border border-gray-600 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none" placeholder="পাসওয়ার্ড দিন">
                     </div>
                     <button onclick="performLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-lg">
                         লগইন করুন
@@ -178,47 +189,9 @@
                 </button>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <!-- Cash -->
-                <div onclick="openManageCashModal()" class="bg-dark-800 p-5 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden group cursor-pointer hover:border-green-500 transition">
-                    <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition">
-                        <i class="fa-solid fa-wallet text-6xl text-green-500"></i>
-                    </div>
-                    <h4 class="text-gray-400 text-sm font-medium uppercase flex items-center gap-2">
-                        ক্যাশ টাকা <i class="fa-solid fa-pen-to-square text-gray-500 text-xs hover:text-white"></i>
-                    </h4>
-                    <p class="text-2xl font-bold text-green-400 mt-1">৳ <span id="dash-cash">0</span></p>
-                    <p class="text-[10px] text-gray-500 mt-1">জমা বা উত্তোলন করতে ক্লিক করুন</p>
-                </div>
-
-                <!-- Account Balance -->
-                <div onclick="openAccountsModal()" class="bg-dark-800 p-5 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden group cursor-pointer hover:border-blue-500 transition">
-                    <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition">
-                        <i class="fa-solid fa-building-columns text-6xl text-blue-500"></i>
-                    </div>
-                    <h4 class="text-gray-400 text-sm font-medium uppercase flex items-center gap-2">
-                        অ্যাকাউন্ট ব্যালেন্স <i class="fa-solid fa-list text-gray-500 text-xs hover:text-white"></i>
-                    </h4>
-                    <p class="text-2xl font-bold text-blue-400 mt-1">৳ <span id="dash-balance">0</span></p>
-                    <p class="text-[10px] text-gray-500 mt-1">বিকাশ, রকেট, ইত্যাদির হিসাব</p>
-                </div>
-                <!-- Stock Amount -->
-                <div class="bg-dark-800 p-5 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden group">
-                    <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition">
-                        <i class="fa-solid fa-boxes-stacked text-6xl text-orange-500"></i>
-                    </div>
-                    <h4 class="text-gray-400 text-sm font-medium uppercase">স্টক এমাউন্ট</h4>
-                    <p class="text-2xl font-bold text-orange-400 mt-1">৳ <span id="dash-stock">0</span></p>
-                </div>
-                <!-- Total Profit -->
-                <div class="bg-dark-800 p-5 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden group">
-                    <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition">
-                        <i class="fa-solid fa-chart-line text-6xl text-purple-500"></i>
-                    </div>
-                    <h4 class="text-gray-400 text-sm font-medium uppercase">মোট লাভ</h4>
-                    <p class="text-2xl font-bold text-purple-400 mt-1">৳ <span id="dash-profit">0</span></p>
-                </div>
+            <!-- Stats Cards Container (Dynamic Rendering) -->
+            <div id="admin-stats-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <!-- Cards will be injected here via JS -->
             </div>
 
             <!-- Tabs -->
@@ -237,7 +210,7 @@
 
                 <!-- STEP 2: Share Own Config -->
                 <div class="mb-6 border-b border-gray-700 pb-6">
-                    <h3 class="font-bold text-lg mb-2 text-blue-400">১. ডাটাবেজ শেয়ার ও এডিট</h3>
+                    <h3 class="font-bold text-lg mb-2 text-blue-400">১. ডাটাবেজ শেয়ার ও এডিট</h3>
                     <p class="text-xs text-gray-400 mb-3">নতুন ডাটাবেজ যুক্ত করুন অথবা তালিকা থেকে এডিট বাটনে ক্লিক করে তথ্য আপডেট করুন।</p>
                     
                     <input type="hidden" id="share-doc-id"> <!-- Hidden ID field for updates -->
@@ -249,7 +222,7 @@
                     <textarea id="share-config" placeholder='আপনার Firebase Config JSON...' class="bg-dark-900 border border-gray-600 rounded p-2 text-sm text-white w-full h-16 font-mono text-xs mb-2"></textarea>
                     
                     <div class="flex gap-2">
-                        <button onclick="shareMyConfig()" id="btn-share-config" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 w-full">শেয়ার করুন</button>
+                        <button onclick="shareMyConfig()" id="btn-share-config" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 w-full">শেয়ার করুন</button>
                         <button onclick="resetShareForm()" id="btn-reset-share" class="bg-gray-600 text-white px-4 py-2 rounded text-sm hover:bg-gray-700 hidden">বাতিল</button>
                     </div>
                 </div>
@@ -257,7 +230,7 @@
                 <!-- STEP 3: Active Database Selection -->
                 <div>
                     <h3 class="font-bold text-lg mb-2 text-green-400">২. অ্যাক্টিভ ডাটাবেজ নির্বাচন করুন</h3>
-                    <p class="text-xs text-gray-400 mb-3">যেকোনো একটি কনফিগারেশন সিলেক্ট করুন। অ্যাপের সমস্ত ডাটা সেখানে সেভ হবে।</p>
+                    <p class="text-xs text-gray-400 mb-3">যেকোনো একটি কনফিগারেশন সিলেক্ট করুন। <br><span class="text-yellow-400">টিপস:</span> ড্রাগ করে পছন্দের ডাটাবেজটিকে সবার উপরে রাখুন, তাহলে কাস্টমাররা সেটিই দেখতে পাবে।</p>
                     
                     <div class="bg-dark-900 rounded-lg p-2 max-h-60 overflow-y-auto" id="team-config-list">
                         <div class="text-center text-gray-500 py-4 text-xs"><i class="fa-solid fa-spinner fa-spin"></i> মাস্টার ডাটাবেজ লোড হচ্ছে...</div>
@@ -287,9 +260,9 @@
                                 <th class="p-3">নাম</th>
                                 <th class="p-3">ক্যাটাগরি</th>
                                 <th class="p-3">কেনা দাম</th>
-                                <th class="p-3">বিক্রয় মূল্য</th>
+                                <th class="p-3">বিক্রয় মূল্য</th>
                                 <th class="p-3">স্টক</th>
-                                <th class="p-3 text-center">বিক্রয় (কুইক)</th>
+                                <th class="p-3 text-center">বিক্রয় (কুইক)</th>
                                 <th class="p-3 text-right">অ্যাকশন</th>
                             </tr>
                         </thead>
@@ -317,7 +290,7 @@
                                 <th class="p-3">কাজের বিবরণ</th>
                                 <th class="p-3 text-center">পরিমাণ</th>
                                 <th class="p-3 text-right">খরচ (Cost)</th>
-                                <th class="p-3 text-right">বিক্রয় (Sale)</th>
+                                <th class="p-3 text-right">বিক্রয় (Sale)</th>
                                 <th class="p-3 text-right">লাভ (Profit)</th>
                             </tr>
                         </thead>
@@ -362,7 +335,7 @@
                 <p class="text-gray-400 text-sm"><i class="fa-solid fa-envelope mr-2"></i> NokshaLab@gmail.com</p>
             </div>
             <div>
-                <h4 class="text-white font-semibold mb-3">সোশ্যাল মিডিয়া</h4>
+                <h4 class="text-white font-semibold mb-3">সোশ্যাল মিডিয়া</h4>
                 <div class="flex justify-center md:justify-start gap-4">
                     <a href="https://web.facebook.com/NokshaLab/" class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white hover:bg-blue-500"><i class="fa-brands fa-facebook-f"></i></a>
                     <a href="https://api.whatsapp.com/send?phone=8801703582125" class="w-8 h-8 rounded bg-green-500 flex items-center justify-center text-white hover:bg-green-400"><i class="fa-brands fa-whatsapp"></i></a>
@@ -450,10 +423,10 @@
             <label class="text-xs text-gray-400 block mb-1">টাকার পরিমাণ</label>
             <input type="number" id="transact-amount" placeholder="0" class="input-field mb-3">
             <label class="text-xs text-gray-400 block mb-1">বিবরণ (ঐচ্ছিক)</label>
-            <input type="text" id="transact-desc" placeholder="যেমন: লোড নেওয়া হলো" class="input-field mb-4">
+            <input type="text" id="transact-desc" placeholder="যেমন: লোড নেওয়া হলো" class="input-field mb-4">
             <div class="flex gap-3">
                 <button onclick="submitAccountTransaction('deposit')" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-bold transition flex justify-center items-center gap-1"><i class="fa-solid fa-plus"></i> জমা</button>
-                <button onclick="submitAccountTransaction('withdraw')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition flex justify-center items-center gap-1"><i class="fa-solid fa-minus"></i> খরচ/নেওয়া</button>
+                <button onclick="submitAccountTransaction('withdraw')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition flex justify-center items-center gap-1"><i class="fa-solid fa-minus"></i> খরচ/নেওয়া</button>
             </div>
             <button onclick="closeModal('modal-account-transact')" class="w-full mt-3 text-gray-500 text-sm hover:text-white">বন্ধ করুন</button>
         </div>
@@ -509,10 +482,10 @@
             <div class="grid grid-cols-1 gap-3">
                 <input type="text" id="item-name" placeholder="কাজের/প্রোডাক্টের নাম" class="input-field">
                 <input type="text" id="item-category" placeholder="ক্যাটাগরি (উদাঃ পাসপোর্ট, রিচার্জ)" class="input-field">
-                <textarea id="item-docs" placeholder="প্রয়োজনীয় কাগজপত্র (কমা দিয়ে লিখুন)" class="input-field h-20"></textarea>
+                <textarea id="item-docs" placeholder="প্রয়োজনীয় কাগজপত্র (কমা দিয়ে লিখুন)" class="input-field h-20"></textarea>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="text-xs text-gray-400">কেনা দাম (Cost)</label><input type="number" id="item-cost" placeholder="0" class="input-field"></div>
-                    <div><label class="text-xs text-gray-400">বিক্রয় মূল্য (Price)</label><input type="number" id="item-price" placeholder="0" class="input-field"></div>
+                    <div><label class="text-xs text-gray-400">বিক্রয় মূল্য (Price)</label><input type="number" id="item-price" placeholder="0" class="input-field"></div>
                 </div>
                 <div><label class="text-xs text-gray-400">স্টক পরিমাণ</label><input type="number" id="item-stock" placeholder="Unlimited হলে -1 দিন" class="input-field"></div>
             </div>
@@ -551,10 +524,12 @@
             items: [], 
             orders: [],
             history: [],
-            accounts: [] 
+            accounts: [],
+            cardOrder: ['cash', 'balance', 'stock', 'profit'] // Default order
         };
 
         let appData = initialData;
+        let localDbList = []; // Local state for db list sorting
         
         let masterDB = null;
         let activeDB = null;
@@ -573,6 +548,14 @@
         let isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
         const savedActiveConfig = localStorage.getItem('activeConfig');
 
+        // Stats Card Definitions
+        const statsDefinitions = {
+            'cash': { icon: 'fa-wallet', color: 'green', title: 'ক্যাশ টাকা', valueKey: 'cash', sub: 'জমা বা উত্তোলন করতে ক্লিক করুন', action: 'openManageCashModal()' },
+            'balance': { icon: 'fa-building-columns', color: 'blue', title: 'অ্যাকাউন্ট ব্যালেন্স', valueKey: 'balance', sub: 'বিকাশ, রকেট, ইত্যাদির হিসাব', action: 'openAccountsModal()' },
+            'stock': { icon: 'fa-boxes-stacked', color: 'orange', title: 'স্টক এমাউন্ট', valueKey: 'stockVal', sub: 'মোট স্টকের কেনা দাম', action: '' },
+            'profit': { icon: 'fa-chart-line', color: 'purple', title: 'মোট লাভ', valueKey: 'profit', sub: 'সর্বমোট লাভের হিসাব', action: '' }
+        };
+
         // --- AUTHENTICATION ---
         const ADMIN_PASS = "M~R.88@Mizhan.25";
 
@@ -590,11 +573,11 @@
                 isAdminLoggedIn = true;
                 localStorage.setItem('isAdminLoggedIn', 'true');
                 closeModal('modal-login');
-                showToast("লগইন সফল হয়েছে!", "success");
+                showToast("লগইন সফল হয়েছে!", "success");
                 showSection('admin');
                 renderNav();
             } else {
-                showToast("ভুল পাসওয়ার্ড!", "error");
+                showToast("ভুল পাসওয়ার্ড!", "error");
             }
         }
 
@@ -637,61 +620,97 @@
             listDiv.innerHTML = '<div class="text-center text-gray-500 py-2"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে...</div>';
 
             masterDB.collection('shared_configs').onSnapshot(snapshot => {
-                listDiv.innerHTML = '';
+                localDbList = []; // Reset local list
                 if(snapshot.empty) {
-                    listDiv.innerHTML = '<div class="text-center text-gray-500 text-xs">কোনো শেয়ার্ড ডাটাবেজ নেই।</div>';
+                    listDiv.innerHTML = '<div class="text-center text-gray-500 text-xs">কোনো শেয়ার্ড ডাটাবেজ নেই।</div>';
+                    renderCustomerView(); 
                     return;
                 }
 
                 snapshot.forEach(doc => {
-                    const data = doc.data();
-                    let activeStyle = "border-gray-700 bg-dark-800";
-                    if (savedActiveConfig && data.config && JSON.parse(savedActiveConfig).projectId === data.config.projectId) {
-                        activeStyle = "border-green-500 bg-green-900/20";
-                    }
-                    
-                    // Prevent SyntaxError: unexpected token newline by using single line stringify
-                    const configString = JSON.stringify(data.config).replace(/"/g, '&quot;');
-                    const docId = doc.id;
-                    const cleanConfig = JSON.stringify(data.config).replace(/"/g, '&quot;');
-                    const safeName = data.name ? data.name.replace(/'/g, "\\'") : '';
-                    const safeEmail = data.email ? data.email.replace(/'/g, "\\'") : '';
+                    localDbList.push({ id: doc.id, ...doc.data() });
+                });
 
-                    const item = `
-                        <div class="border ${activeStyle} rounded p-3 mb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 transition hover:bg-dark-700">
+                // Sort based on saved preference
+                const savedOrder = JSON.parse(localStorage.getItem('dbListOrder') || '[]');
+                if (savedOrder.length > 0) {
+                    localDbList.sort((a, b) => {
+                        const idxA = savedOrder.indexOf(a.id);
+                        const idxB = savedOrder.indexOf(b.id);
+                        if (idxA === -1 && idxB === -1) return 0;
+                        if (idxA === -1) return 1;
+                        if (idxB === -1) return -1;
+                        return idxA - idxB;
+                    });
+                }
+
+                renderDbList(); // Render the sorted list
+
+                // Auto Connect to the FIRST DB in the sorted list if nothing connected
+                if (!activeDB && !localStorage.getItem('activeConfig') && localDbList.length > 0) {
+                    const firstConfig = localDbList[0];
+                    if (firstConfig && firstConfig.config) {
+                        console.log("Auto-connecting to priority database:", firstConfig.name);
+                        initActiveApp(firstConfig.config);
+                        showToast(`অটো-কানেক্ট: ${firstConfig.name}`, "neutral");
+                    }
+                } else if (!activeDB && !localStorage.getItem('activeConfig')) {
+                     renderCustomerView();
+                }
+
+            }, error => {
+                console.error("Master DB Access Error:", error);
+                listDiv.innerHTML = `<div class="text-center text-red-400 py-2 text-xs">Access Denied! Check Rules.</div>`;
+                renderCustomerView(); 
+            });
+        }
+
+        function renderDbList() {
+            const listDiv = document.getElementById('team-config-list');
+            listDiv.innerHTML = '';
+            
+            localDbList.forEach((data, index) => {
+                let activeStyle = "border-gray-700 bg-dark-800";
+                if (savedActiveConfig && data.config && JSON.parse(savedActiveConfig).projectId === data.config.projectId) {
+                    activeStyle = "border-green-500 bg-green-900/20";
+                }
+                
+                const configString = JSON.stringify(data.config).replace(/"/g, '&quot;');
+                const cleanConfig = JSON.stringify(data.config).replace(/"/g, '&quot;');
+                const safeName = data.name ? data.name.replace(/'/g, "\\'") : '';
+                const safeEmail = data.email ? data.email.replace(/'/g, "\\'") : '';
+
+                const item = `
+                    <div class="draggable-item border ${activeStyle} rounded p-3 mb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 hover:bg-dark-700"
+                         draggable="true" data-type="db" data-index="${index}">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-grip-lines text-gray-600 cursor-grab"></i>
                             <div>
                                 <h4 class="font-bold text-white text-sm">${data.name}</h4>
                                 <p class="text-xs text-gray-400">${data.email}</p>
-                                <p class="text-[10px] text-gray-500 mt-1">ID: ${data.config ? data.config.projectId : 'N/A'}</p>
-                            </div>
-                            <div class="flex gap-2 w-full md:w-auto">
-                                <button onclick="activateDatabase(${configString})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs flex-1 md:flex-none text-center">
-                                    ব্যবহার করুন
-                                </button>
-                                <button onclick="editSharedConfig('${docId}', '${safeName}', '${safeEmail}', '${cleanConfig}')" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-xs" title="এডিট">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button onclick="deleteSharedConfig('${docId}')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs" title="ডিলিট">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
                             </div>
                         </div>
-                    `;
-                    listDiv.innerHTML += item;
-                });
-            }, error => {
-                console.error("Master DB Access Error:", error);
-                listDiv.innerHTML = `<div class="text-center text-red-400 py-2 text-xs">
-                    <i class="fa-solid fa-triangle-exclamation"></i> অ্যাক্সেস ডিনাইড!<br>
-                    Firebase Console-এ Rules চেক করুন।<br>
-                    'shared_configs' কালেকশন রিড পারমিশন নেই।
-                </div>`;
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button onclick="activateDatabase(${configString})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs flex-1 md:flex-none text-center">
+                                ব্যবহার করুন
+                            </button>
+                            <button onclick="editSharedConfig('${data.id}', '${safeName}', '${safeEmail}', '${cleanConfig}')" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-xs">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteSharedConfig('${data.id}')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listDiv.innerHTML += item;
             });
+            addDragListeners();
         }
 
         // --- SHARED CONFIG CRUD ---
         function shareMyConfig() {
-            if(!masterDB) { showToast("মাস্টার ডাটাবেজ কানেক্টেড নয়!", "error"); return; }
+            if(!masterDB) { showToast("মাস্টার ডাটাবেজ কানেক্টেড নয়!", "error"); return; }
             
             const docId = document.getElementById('share-doc-id').value;
             const name = document.getElementById('share-name').value;
@@ -710,11 +729,11 @@
                                  : masterDB.collection('shared_configs').add(payload);
 
             action.then(() => {
-                showToast(docId ? "আপডেট সফল হয়েছে!" : "কনফিগারেশন শেয়ার সফল হয়েছে!", "success");
+                showToast(docId ? "আপডেট সফল হয়েছে!" : "কনফিগারেশন শেয়ার সফল হয়েছে!", "success");
                 resetShareForm();
             }).catch(err => {
                 console.error(err);
-                showToast("অ্যাকশন ব্যর্থ হয়েছে (Rules চেক করুন)", "error");
+                showToast("অ্যাকশন ব্যর্থ হয়েছে (Rules চেক করুন)", "error");
             });
         }
 
@@ -740,8 +759,8 @@
             if(!masterDB) return;
             if(confirm("আপনি কি নিশ্চিত এই কনফিগারেশনটি ডিলিট করতে চান?")) {
                 masterDB.collection('shared_configs').doc(id).delete()
-                .then(() => showToast("কনফিগারেশন ডিলিট হয়েছে", "neutral"))
-                .catch(err => showToast("ডিলিট ব্যর্থ হয়েছে", "error"));
+                .then(() => showToast("কনফিগারেশন ডিলিট হয়েছে", "neutral"))
+                .catch(err => showToast("ডিলিট ব্যর্থ হয়েছে", "error"));
             }
         }
 
@@ -750,14 +769,14 @@
             document.getElementById('share-name').value = '';
             document.getElementById('share-email').value = '';
             document.getElementById('share-config').value = '';
-            document.getElementById('btn-share-config').innerText = "শেয়ার করুন";
+            document.getElementById('btn-share-config').innerText = "শেয়ার করুন";
             document.getElementById('btn-reset-share').classList.add('hidden');
         }
 
         function activateDatabase(config) {
             localStorage.setItem('activeConfig', JSON.stringify(config));
             initActiveApp(config);
-            showToast("ডাটাবেজ এক্টিভেট হয়েছে! এখন ডাটা লোড হবে।", "success");
+            showToast("ডাটাবেজ এক্টিভেট হয়েছে!", "success");
         }
 
         function initActiveApp(config) {
@@ -790,9 +809,11 @@
                     appData = doc.data();
                     if(!appData.accounts) appData.accounts = [];
                     if(!appData.items) appData.items = [];
+                    if(!appData.cardOrder) appData.cardOrder = initialData.cardOrder;
                     refreshUI();
                 } else {
-                    saveData();
+                    appData = initialData; 
+                    refreshUI();
                 }
             });
         }
@@ -809,25 +830,19 @@
         async function performHardReset() {
             if(confirm("সতর্কতা! আপনি কি নিশ্চিত আপনি 'হার্ড রিসেট' করতে চান?\n\nএটি করলে বর্তমানে কানেক্টেড ডাটাবেজের সমস্ত ডাটা মুছে যাবে।")) {
                 if(confirm("এটি শেষ সতর্কতা: সমস্ত ডাটা পার্মানেন্টলি মুছে ফেলা হবে। আপনি কি নিশ্চিত?")) {
-                    
-                    // Wipe Active DB Data first
                     if(activeDB) {
                         try {
-                            // Resetting to initial empty state
                             await activeDB.collection('noksha_store').doc('main_data').set(initialData);
-                            showToast("ডাটাবেজ ওয়াইপ করা হয়েছে...", "neutral");
+                            showToast("ডাটাবেজ ওয়াইপ করা হয়েছে...", "neutral");
                         } catch(e) {
                             console.error("Wipe failed", e);
-                            alert("ডাটাবেজ ক্লিয়ার করতে সমস্যা হয়েছে। পারমিশন চেক করুন।");
+                            alert("ডাটাবেজ ক্লিয়ার করতে সমস্যা হয়েছে। পারমিশন চেক করুন।");
                         }
                     }
-
-                    // Clear Local Storage
                     localStorage.removeItem('nokshaData');
                     localStorage.removeItem('masterConfig');
                     localStorage.removeItem('activeConfig');
-                    
-                    // Reload
+                    localStorage.removeItem('dbListOrder');
                     setTimeout(() => location.reload(), 1000); 
                 }
             }
@@ -871,6 +886,22 @@
             const searchVal = document.getElementById('customer-search').value.toLowerCase();
             container.innerHTML = '';
             
+            if (!activeDB && !localStorage.getItem('activeConfig')) {
+                 container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-3 text-blue-500"></i>
+                    <p>সিস্টেম কানেক্ট হচ্ছে, অপেক্ষা করুন...</p>
+                 </div>`;
+                 setTimeout(() => {
+                     if(!activeDB && container.innerHTML.includes('সিস্টেম কানেক্ট হচ্ছে')) {
+                          container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">
+                            <i class="fa-solid fa-box-open text-4xl mb-3 opacity-50"></i>
+                            <p>কোনো সার্ভিস ডাটা পাওয়া যায়নি।</p>
+                         </div>`;
+                     }
+                 }, 5000);
+                 return;
+            }
+
             if (appData.items.length === 0) {
                  container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10"><i class="fa-solid fa-box-open text-4xl mb-3 opacity-50"></i><p>কোনো সার্ভিস যুক্ত করা নেই।</p></div>`;
                  return;
@@ -898,22 +929,57 @@
         }
 
         function renderAdminPanel() {
-            document.getElementById('dash-cash').innerText = appData.cash;
-            
+            // Logic for calculating values
             let totalAccountBalance = appData.accounts.reduce((acc, curr) => acc + parseInt(curr.balance), 0);
             appData.balance = totalAccountBalance;
-            document.getElementById('dash-balance').innerText = totalAccountBalance;
             
             let totalStockVal = appData.items.reduce((acc, item) => {
                 if(item.stock > 0) return acc + (item.cost * item.stock);
                 return acc;
             }, 0);
             appData.stockVal = totalStockVal;
-            document.getElementById('dash-stock').innerText = totalStockVal;
-            document.getElementById('dash-profit').innerText = appData.profit;
+
+            // Render Stats Cards based on Order
+            const statsContainer = document.getElementById('admin-stats-container');
+            statsContainer.innerHTML = '';
             
+            // Default order check
+            if(!appData.cardOrder) appData.cardOrder = ['cash', 'balance', 'stock', 'profit'];
+
+            appData.cardOrder.forEach((key, index) => {
+                const def = statsDefinitions[key];
+                if(!def) return;
+                
+                const val = appData[def.valueKey];
+                
+                // Fix: Construct classes properly to avoid duplicate class attributes
+                let cardClasses = "draggable-item bg-dark-800 p-5 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden group transition";
+                let onClickAttr = "";
+                
+                if (def.action) {
+                    cardClasses += ` cursor-pointer hover:border-${def.color}-500`;
+                    onClickAttr = `onclick="${def.action}"`;
+                }
+                
+                const card = `
+                    <div ${onClickAttr} class="${cardClasses}" draggable="true" data-type="card" data-index="${index}">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                            <i class="fa-solid ${def.icon} text-6xl text-${def.color}-500"></i>
+                        </div>
+                        <h4 class="text-gray-400 text-sm font-medium uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-grip-vertical text-gray-600 cursor-grab mr-1"></i> ${def.title}
+                            ${def.action ? `<i class="fa-solid fa-pen-to-square text-gray-500 text-xs hover:text-white ml-auto"></i>` : ''}
+                        </h4>
+                        <p class="text-2xl font-bold text-${def.color}-400 mt-1">৳ ${val}</p>
+                        ${def.sub ? `<p class="text-[10px] text-gray-500 mt-1">${def.sub}</p>` : ''}
+                    </div>
+                `;
+                statsContainer.innerHTML += card;
+            });
+
             renderAdminItems();
             renderHistory();
+            addDragListeners(); // Re-bind for cards
         }
 
         function renderAdminItems() {
@@ -926,11 +992,19 @@
                  return;
             }
 
-            appData.items.forEach(item => {
+            const isDraggable = searchVal === '';
+
+            appData.items.forEach((item, index) => {
                 if (item.name.toLowerCase().includes(searchVal) || item.category.toLowerCase().includes(searchVal)) {
+                    const draggableAttr = isDraggable ? 'draggable="true"' : '';
+                    const rowClass = isDraggable ? 'draggable-item' : '';
+                    
                     const row = `
-                        <tr class="border-b border-gray-700 hover:bg-dark-700 transition">
-                            <td class="p-3 text-white font-medium">${item.name}</td>
+                        <tr class="border-b border-gray-700 hover:bg-dark-700 transition ${rowClass}" ${draggableAttr} data-type="item" data-index="${index}">
+                            <td class="p-3 text-white font-medium flex items-center gap-2">
+                                ${isDraggable ? '<i class="fa-solid fa-grip-lines text-gray-600 mr-2 cursor-grab"></i>' : ''}
+                                ${item.name}
+                            </td>
                             <td class="p-3"><span class="bg-gray-700 text-xs px-2 py-1 rounded">${item.category}</span></td>
                             <td class="p-3 text-red-300">${item.cost}</td>
                             <td class="p-3 text-green-300">${item.price}</td>
@@ -946,6 +1020,97 @@
                     tbody.innerHTML += row;
                 }
             });
+            if (isDraggable) addDragListeners();
+        }
+
+        // --- GLOBAL DRAG AND DROP LOGIC ---
+        let dragSrcEl = null;
+        let dragType = null;
+        let dragStartIndex = null;
+
+        function addDragListeners() {
+            const items = document.querySelectorAll('.draggable-item');
+            items.forEach(item => {
+                item.removeEventListener('dragstart', handleDragStart);
+                item.removeEventListener('dragover', handleDragOver);
+                item.removeEventListener('drop', handleDrop);
+                item.removeEventListener('dragenter', handleDragEnter);
+                item.removeEventListener('dragleave', handleDragLeave);
+
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragenter', handleDragEnter);
+                item.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        function handleDragStart(e) {
+            dragSrcEl = this;
+            dragType = this.getAttribute('data-type');
+            dragStartIndex = +this.getAttribute('data-index');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+            this.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) e.preventDefault();
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            this.classList.add('bg-dark-600');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('bg-dark-600');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            this.classList.remove('dragging');
+            this.classList.remove('bg-dark-600');
+
+            const targetType = this.getAttribute('data-type');
+            const targetIndex = +this.getAttribute('data-index');
+
+            if (dragSrcEl !== this && dragType === targetType) {
+                if (dragType === 'item') {
+                    // Swap Service Items
+                    const movedItem = appData.items.splice(dragStartIndex, 1)[0];
+                    appData.items.splice(targetIndex, 0, movedItem);
+                    saveData();
+                    renderAdminItems();
+                } 
+                else if (dragType === 'card') {
+                    // Swap Stats Cards
+                    const movedCard = appData.cardOrder.splice(dragStartIndex, 1)[0];
+                    appData.cardOrder.splice(targetIndex, 0, movedCard);
+                    saveData();
+                    renderAdminPanel();
+                }
+                else if (dragType === 'account') {
+                    // Swap Accounts
+                    const movedAcc = appData.accounts.splice(dragStartIndex, 1)[0];
+                    appData.accounts.splice(targetIndex, 0, movedAcc);
+                    saveData();
+                    renderAccountsList();
+                }
+                else if (dragType === 'db') {
+                    // Swap Database Configs (Local Only)
+                    const movedDb = localDbList.splice(dragStartIndex, 1)[0];
+                    localDbList.splice(targetIndex, 0, movedDb);
+                    
+                    // Save Sort Order to LocalStorage
+                    const orderIds = localDbList.map(db => db.id);
+                    localStorage.setItem('dbListOrder', JSON.stringify(orderIds));
+                    
+                    renderDbList();
+                    showToast("ডাটাবেজ সাজানো হয়েছে", "success");
+                }
+            }
+            return false;
         }
 
         // ADDED: Missing function
@@ -993,11 +1158,13 @@
                 tbody.innerHTML = '<tr><td colspan="4" class="p-5 text-center text-gray-500">কোনো অ্যাকাউন্ট নেই। নতুন যুক্ত করুন।</td></tr>';
             }
 
-            appData.accounts.forEach(acc => {
+            appData.accounts.forEach((acc, index) => {
                 total += parseInt(acc.balance);
                 tbody.innerHTML += `
-                    <tr class="border-b border-gray-700 hover:bg-dark-800 transition">
-                        <td class="p-3 text-white font-medium">${acc.name}</td>
+                    <tr class="draggable-item border-b border-gray-700 hover:bg-dark-800 transition" draggable="true" data-type="account" data-index="${index}">
+                        <td class="p-3 text-white font-medium flex items-center gap-2">
+                            <i class="fa-solid fa-grip-lines text-gray-600 cursor-grab mr-2"></i> ${acc.name}
+                        </td>
                         <td class="p-3 text-right text-blue-400 font-bold">৳ ${acc.balance}</td>
                         <td class="p-3 text-center">
                             <button onclick="openAccountTransactModal(${acc.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs"><i class="fa-solid fa-money-bill-transfer"></i></button>
@@ -1009,37 +1176,47 @@
                     </tr>`;
             });
             document.getElementById('modal-total-balance').innerText = '৳ ' + total;
+            addDragListeners();
         }
 
         function openAccountFormModal(id = null) {
             document.getElementById('modal-account-form').classList.remove('hidden');
+            const balanceLabel = document.querySelector('#initial-balance-div label');
+
             if(id) {
                 const acc = appData.accounts.find(a => a.id === id);
                 document.getElementById('account-form-title').innerText = "অ্যাকাউন্ট এডিট করুন";
                 document.getElementById('account-id').value = acc.id;
                 document.getElementById('account-name').value = acc.name;
-                document.getElementById('initial-balance-div').classList.add('hidden');
+                
+                // Show current balance for editing
+                document.getElementById('initial-balance-div').classList.remove('hidden');
+                document.getElementById('account-initial-balance').value = acc.balance;
+                balanceLabel.innerText = "বর্তমান ব্যালেন্স (সংশোধন)";
             } else {
                 document.getElementById('account-form-title').innerText = "নতুন অ্যাকাউন্ট";
                 document.getElementById('account-id').value = '';
                 document.getElementById('account-name').value = '';
                 document.getElementById('account-initial-balance').value = '';
                 document.getElementById('initial-balance-div').classList.remove('hidden');
+                balanceLabel.innerText = "শুরুর ব্যালেন্স";
             }
         }
 
         function saveAccount() {
             const id = document.getElementById('account-id').value;
             const name = document.getElementById('account-name').value;
+            const balanceVal = parseInt(document.getElementById('account-initial-balance').value) || 0;
+
             if(!name) return;
 
             if(id) {
                 const index = appData.accounts.findIndex(a => a.id == id);
                 appData.accounts[index].name = name;
+                appData.accounts[index].balance = balanceVal; 
             } else {
-                const initBal = parseInt(document.getElementById('account-initial-balance').value) || 0;
-                appData.accounts.push({ id: Date.now(), name: name, balance: initBal });
-                if(initBal > 0) addToHistory('নতুন অ্যাকাউন্ট', `${name} যুক্ত হয়েছে`, 1, 0, initBal, 0);
+                appData.accounts.push({ id: Date.now(), name: name, balance: balanceVal });
+                if(balanceVal > 0) addToHistory('নতুন অ্যাকাউন্ট', `${name} যুক্ত হয়েছে`, 1, 0, balanceVal, 0);
             }
             saveData();
             closeModal('modal-account-form');
@@ -1091,7 +1268,7 @@
 
             if (type === 'add') {
                 appData.cash += amount;
-                addToHistory('ম্যানুয়াল ক্যাশ জমা', desc, 1, 0, amount, 0);
+                addToHistory('ম্যানুয়াল ক্যাশ জমা', desc, 1, 0, amount, 0);
             } else {
                 if (appData.cash < amount) { showToast("ক্যাশ নেই!", "error"); return; }
                 appData.cash -= amount;
@@ -1178,10 +1355,10 @@
             appData.profit += totalProfit;
             if (item.stock > 0) item.stock = Math.max(0, item.stock - qty);
 
-            addToHistory('বিক্রয়', item.name, qty, totalCost, totalPrice, totalProfit);
+            addToHistory('বিক্রয়', item.name, qty, totalCost, totalPrice, totalProfit);
             saveData();
             closeModal('modal-quicksale');
-            showToast("বিক্রয় সফল", "success");
+            showToast("বিক্রয় সফল", "success");
         }
 
         function openOrderModal(id) {
@@ -1193,7 +1370,7 @@
 
         function submitOrder() {
             closeModal('modal-order');
-            showToast("অর্ডার হয়েছে", "success");
+            showToast("অর্ডার হয়েছে", "success");
         }
 
         function approveOrder(index) {
@@ -1210,7 +1387,7 @@
             saveData();
             renderOrders();
             renderAdminPanel(); 
-            showToast("অর্ডার এপ্রুভ হয়েছে", "success");
+            showToast("অর্ডার এপ্রুভ হয়েছে", "success");
         }
 
         function deleteOrder(index) {
@@ -1237,7 +1414,7 @@
                 tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500">কোনো হিস্ট্রি নেই।</td></tr>'; return;
             }
             appData.history.forEach(h => {
-                let typeClass = h.type.includes('বিক্রয়') ? 'text-blue-400' : (h.type.includes('জমা') ? 'text-green-400' : 'text-purple-400');
+                let typeClass = h.type.includes('বিক্রয়') ? 'text-blue-400' : (h.type.includes('জমা') ? 'text-green-400' : 'text-purple-400');
                 if(h.type.includes('উত্তোলন') || h.type.includes('খরচ')) typeClass = 'text-red-400';
                 
                 const row = `
