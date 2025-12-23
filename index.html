@@ -94,6 +94,14 @@
             border: 2px dashed #3b82f6;
             transform: scale(0.98);
         }
+        /* Custom Checkbox Style */
+        .custom-checkbox input:checked + div {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .custom-checkbox input:checked + div svg {
+            display: block;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -190,7 +198,7 @@
             </div>
 
             <!-- Stats Cards Container (Dynamic Rendering) -->
-            <div id="admin-stats-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div id="admin-stats-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
                 <!-- Cards will be injected here via JS -->
             </div>
 
@@ -299,15 +307,15 @@
                 </div>
             </div>
 
-            <!-- DANGER ZONE -->
+            <!-- DANGER ZONE (Updated for Granular Reset) -->
             <div class="glass-panel rounded-xl p-6 border border-red-900/50 bg-red-900/10">
                 <h3 class="text-xl font-bold text-red-400 mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i> ডেঞ্জার জোন (Danger Zone)</h3>
-                <p class="text-gray-400 text-sm mb-4">সতর্কতা: এই অ্যাকশনগুলো অপরিবর্তনীয়। বুঝে শুনে ক্লিক করুন।</p>
+                <p class="text-gray-400 text-sm mb-4">সতর্কতা: এখান থেকে আপনি ডাটাবেজের তথ্য মুছে ফেলতে পারেন। বুঝে শুনে ক্লিক করুন।</p>
                 <div class="flex flex-col md:flex-row gap-4">
-                    <button onclick="performHardReset()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg flex items-center justify-center gap-2 transition hover:scale-105">
-                        <i class="fa-solid fa-skull-crossbones"></i> হার্ড রিসেট (Hard Reset)
+                    <button onclick="openHardResetModal()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg flex items-center justify-center gap-2 transition hover:scale-105">
+                        <i class="fa-solid fa-skull-crossbones"></i> কাস্টম রিসেট (Custom Reset)
                     </button>
-                    <p class="text-xs text-gray-500 self-center">এই বাটনটি চাপলে বর্তমানে সিলেক্ট করা ডাটাবেজের সমস্ত ডাটা এবং আপনার ব্রাউজারের কনফিগারেশন মুছে যাবে।</p>
+                    <p class="text-xs text-gray-500 self-center">এই বাটনে ক্লিক করে আপনি বেছে নিতে পারবেন কোন ডাটাগুলো (হিস্ট্রি, অ্যাকাউন্ট, সার্ভিস) আপনি ডিলিট করতে চান।</p>
                 </div>
             </div>
         </section>
@@ -350,7 +358,7 @@
 
     <!-- MODALS -->
     
-    <!-- Manage Cash Modal -->
+    <!-- Manage Cash Modal (UPDATED with Reset Button) -->
     <div id="modal-manage-cash" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 hidden backdrop-blur-sm">
         <div class="glass-panel p-6 rounded-xl w-full max-w-sm mx-4">
             <h3 class="text-lg font-bold text-white mb-4">ক্যাশ ম্যানেজমেন্ট</h3>
@@ -358,11 +366,12 @@
             <input type="number" id="manage-cash-amount" placeholder="0" class="input-field mb-3">
             <label class="text-xs text-gray-400 block mb-1">বিবরণ / কারণ (ঐচ্ছিক)</label>
             <input type="text" id="manage-cash-desc" placeholder="যেমন: ব্যক্তিগত খরচ, বাসা থেকে আনা..." class="input-field mb-4">
-            <div class="flex gap-3">
+            <div class="flex gap-3 mb-3">
                 <button onclick="submitCashTransaction('add')" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-bold transition"><i class="fa-solid fa-plus"></i> জমা</button>
                 <button onclick="submitCashTransaction('withdraw')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition"><i class="fa-solid fa-minus"></i> উত্তোলন</button>
             </div>
-            <button onclick="closeModal('modal-manage-cash')" class="w-full mt-3 text-gray-400 text-sm hover:text-white">বন্ধ করুন</button>
+            <button onclick="resetCash()" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded font-bold transition mb-3"><i class="fa-solid fa-arrows-rotate"></i> রিসেট (০ করুন)</button>
+            <button onclick="closeModal('modal-manage-cash')" class="w-full text-gray-400 text-sm hover:text-white">বন্ধ করুন</button>
         </div>
     </div>
 
@@ -432,27 +441,51 @@
         </div>
     </div>
 
-    <!-- Quick Sale Modal -->
+    <!-- Quick Sale Modal (UPDATED) -->
     <div id="modal-quicksale" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 hidden backdrop-blur-sm">
         <div class="glass-panel p-6 rounded-xl w-full max-w-sm mx-4">
-            <h3 class="text-lg font-bold text-white mb-4">কাজের পরিমাণ নির্ধারণ করুন</h3>
+            <h3 class="text-lg font-bold text-white mb-4">কাজের পরিমাণ ও দাম নির্ধারণ</h3>
             <div class="bg-dark-900 p-3 rounded mb-4 border border-gray-700">
                 <p id="qs-name" class="text-blue-400 font-bold mb-1"></p>
                 <div class="flex justify-between text-xs text-gray-400">
-                    <span>ইউনিট প্রাইস: <span id="qs-price" class="text-white"></span></span>
-                    <span>ইউনিট খরচ: <span id="qs-cost" class="text-white"></span></span>
+                    <span>ফিক্সড প্রাইস: <span id="qs-price" class="text-white"></span></span>
+                    <span>কেনা দাম: <span id="qs-cost" class="text-white"></span></span>
                 </div>
             </div>
-            <label class="text-xs text-gray-400 block mb-1">পরিমাণ (Pieces/Count)</label>
-            <input type="number" id="qs-qty" value="1" min="1" class="input-field mb-4 text-center text-xl font-bold" oninput="updateQSPreview()">
+            
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">পরিমাণ (Qty)</label>
+                    <input type="number" id="qs-qty" value="1" min="1" class="input-field text-center font-bold" oninput="updateQSPreview()">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">বিক্রয় মূল্য (একক)</label>
+                    <input type="number" id="qs-custom-price" class="input-field text-center font-bold border-blue-500" oninput="updateQSPreview()">
+                </div>
+            </div>
+
             <div class="mb-4 text-center">
                 <p class="text-xs text-gray-400">মোট বিল হবে:</p>
                 <p class="text-xl font-bold text-green-400">৳ <span id="qs-total">0</span></p>
+                <p class="text-[10px] text-gray-500 mt-1">সম্ভাব্য লাভ: ৳ <span id="qs-profit-preview">0</span></p>
             </div>
             <div class="flex gap-3">
                 <button onclick="submitQuickSale()" class="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">কনফার্ম</button>
                 <button onclick="closeModal('modal-quicksale')" class="flex-1 bg-gray-600 text-white py-2 rounded hover:bg-gray-700">বাতিল</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div id="modal-product-details" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 hidden backdrop-blur-sm">
+        <div class="glass-panel p-6 rounded-xl w-full max-w-md mx-4 transform transition-all scale-100">
+            <h3 class="text-2xl font-bold text-white mb-2" id="pd-name">Product Name</h3>
+            <span id="pd-category" class="bg-blue-900 text-blue-300 text-xs px-2 py-1 rounded uppercase font-bold mb-4 inline-block">CATEGORY</span>
+            
+            <!-- Content Container -->
+            <div id="pd-content" class="space-y-4"></div>
+
+            <button onclick="closeModal('modal-product-details')" class="w-full mt-6 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded font-bold">বন্ধ করুন</button>
         </div>
     </div>
 
@@ -463,13 +496,64 @@
             <div class="mb-4 bg-dark-900 p-3 rounded border border-gray-700">
                 <p class="text-blue-400 font-bold" id="order-item-name">Item Name</p>
                 <p class="text-gray-400 text-sm mt-1">দাম: <span id="order-item-price" class="text-white"></span> টাকা</p>
-                <div id="order-item-docs" class="mt-2 text-xs text-gray-500 bg-dark-800 p-2 rounded"></div>
             </div>
             <input type="text" id="order-customer-name" placeholder="আপনার নাম" class="w-full bg-dark-800 border border-gray-600 rounded p-2 mb-3 text-white">
             <input type="tel" id="order-customer-phone" placeholder="ফোন নাম্বার" class="w-full bg-dark-800 border border-gray-600 rounded p-2 mb-4 text-white">
             <div class="flex gap-3">
                 <button onclick="submitOrder()" class="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700">অর্ডার করুন</button>
                 <button onclick="closeModal('modal-order')" class="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700">বন্ধ করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hard Reset Modal (NEW) -->
+    <div id="modal-hard-reset" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 hidden backdrop-blur-sm">
+        <div class="glass-panel p-6 rounded-xl w-full max-w-sm mx-4 border-2 border-red-900/50 shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-800">
+                    <i class="fa-solid fa-trash-can text-3xl text-red-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">কি কি ডিলিট করতে চান?</h3>
+                <p class="text-xs text-gray-400 mt-2">সতর্কতা: নিচের সিলেক্ট করা আইটেমগুলো চিরতরে মুছে যাবে।</p>
+            </div>
+            
+            <div class="space-y-3 mb-6 bg-dark-900 p-4 rounded-lg border border-gray-700">
+                <label class="flex items-center space-x-3 cursor-pointer custom-checkbox">
+                    <input type="checkbox" id="reset-history" class="hidden">
+                    <div class="w-5 h-5 border-2 border-gray-600 rounded flex items-center justify-center transition-colors">
+                        <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-gray-300 text-sm">লেনদেনের ইতিহাস (History)</span>
+                </label>
+                
+                <label class="flex items-center space-x-3 cursor-pointer custom-checkbox">
+                    <input type="checkbox" id="reset-accounts" class="hidden">
+                    <div class="w-5 h-5 border-2 border-gray-600 rounded flex items-center justify-center transition-colors">
+                        <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-gray-300 text-sm">অ্যাকাউন্ট তালিকা (Accounts)</span>
+                </label>
+                
+                <label class="flex items-center space-x-3 cursor-pointer custom-checkbox">
+                    <input type="checkbox" id="reset-items" class="hidden">
+                    <div class="w-5 h-5 border-2 border-gray-600 rounded flex items-center justify-center transition-colors">
+                        <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-gray-300 text-sm">সার্ভিস ও প্রোডাক্ট তালিকা</span>
+                </label>
+
+                <label class="flex items-center space-x-3 cursor-pointer custom-checkbox">
+                    <input type="checkbox" id="reset-orders" class="hidden">
+                    <div class="w-5 h-5 border-2 border-gray-600 rounded flex items-center justify-center transition-colors">
+                        <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-gray-300 text-sm">অর্ডার তালিকা (Orders)</span>
+                </label>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="submitHardReset()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition shadow-lg">মুছে ফেলুন</button>
+                <button onclick="closeModal('modal-hard-reset')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded transition">বাতিল</button>
             </div>
         </div>
     </div>
@@ -525,11 +609,11 @@
             orders: [],
             history: [],
             accounts: [],
-            cardOrder: ['cash', 'balance', 'stock', 'profit'] // Default order
+            cardOrder: ['capital', 'cash', 'balance', 'stock', 'profit'] 
         };
 
         let appData = initialData;
-        let localDbList = []; // Local state for db list sorting
+        let localDbList = []; 
         
         let masterDB = null;
         let activeDB = null;
@@ -548,12 +632,13 @@
         let isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
         const savedActiveConfig = localStorage.getItem('activeConfig');
 
-        // Stats Card Definitions
+        // Stats Card Definitions (Updated with Actions)
         const statsDefinitions = {
+            'capital': { icon: 'fa-coins', color: 'teal', title: 'মোট মূলধন', valueKey: 'capital', sub: 'ক্যাশ + ব্যালেন্স + স্টক', action: '' },
             'cash': { icon: 'fa-wallet', color: 'green', title: 'ক্যাশ টাকা', valueKey: 'cash', sub: 'জমা বা উত্তোলন করতে ক্লিক করুন', action: 'openManageCashModal()' },
             'balance': { icon: 'fa-building-columns', color: 'blue', title: 'অ্যাকাউন্ট ব্যালেন্স', valueKey: 'balance', sub: 'বিকাশ, রকেট, ইত্যাদির হিসাব', action: 'openAccountsModal()' },
             'stock': { icon: 'fa-boxes-stacked', color: 'orange', title: 'স্টক এমাউন্ট', valueKey: 'stockVal', sub: 'মোট স্টকের কেনা দাম', action: '' },
-            'profit': { icon: 'fa-chart-line', color: 'purple', title: 'মোট লাভ', valueKey: 'profit', sub: 'সর্বমোট লাভের হিসাব', action: '' }
+            'profit': { icon: 'fa-chart-line', color: 'purple', title: 'মোট লাভ', valueKey: 'profit', sub: 'রিসেট করতে ক্লিক করুন', action: 'confirmResetProfit()' }
         };
 
         // --- AUTHENTICATION ---
@@ -620,7 +705,7 @@
             listDiv.innerHTML = '<div class="text-center text-gray-500 py-2"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে...</div>';
 
             masterDB.collection('shared_configs').onSnapshot(snapshot => {
-                localDbList = []; // Reset local list
+                localDbList = []; 
                 if(snapshot.empty) {
                     listDiv.innerHTML = '<div class="text-center text-gray-500 text-xs">কোনো শেয়ার্ড ডাটাবেজ নেই।</div>';
                     renderCustomerView(); 
@@ -631,7 +716,6 @@
                     localDbList.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Sort based on saved preference
                 const savedOrder = JSON.parse(localStorage.getItem('dbListOrder') || '[]');
                 if (savedOrder.length > 0) {
                     localDbList.sort((a, b) => {
@@ -644,9 +728,8 @@
                     });
                 }
 
-                renderDbList(); // Render the sorted list
+                renderDbList(); 
 
-                // Auto Connect to the FIRST DB in the sorted list if nothing connected
                 if (!activeDB && !localStorage.getItem('activeConfig') && localDbList.length > 0) {
                     const firstConfig = localDbList[0];
                     if (firstConfig && firstConfig.config) {
@@ -711,56 +794,35 @@
         // --- SHARED CONFIG CRUD ---
         function shareMyConfig() {
             if(!masterDB) { showToast("মাস্টার ডাটাবেজ কানেক্টেড নয়!", "error"); return; }
-            
             const docId = document.getElementById('share-doc-id').value;
             const name = document.getElementById('share-name').value;
             const email = document.getElementById('share-email').value;
             const configStr = document.getElementById('share-config').value;
-            
             if(!name || !email || !configStr) { showToast("সব তথ্য পূরণ করুন", "error"); return; }
-
             let config;
             try { try { config = JSON.parse(configStr); } catch(e) { config = new Function("return " + configStr)(); } }
             catch(e) { showToast("ভুল কনফিগারেশন কোড", "error"); return; }
-
             const payload = { name, email, config, timestamp: new Date() };
-
-            const action = docId ? masterDB.collection('shared_configs').doc(docId).update(payload) 
-                                 : masterDB.collection('shared_configs').add(payload);
-
-            action.then(() => {
-                showToast(docId ? "আপডেট সফল হয়েছে!" : "কনফিগারেশন শেয়ার সফল হয়েছে!", "success");
-                resetShareForm();
-            }).catch(err => {
-                console.error(err);
-                showToast("অ্যাকশন ব্যর্থ হয়েছে (Rules চেক করুন)", "error");
-            });
+            const action = docId ? masterDB.collection('shared_configs').doc(docId).update(payload) : masterDB.collection('shared_configs').add(payload);
+            action.then(() => { showToast(docId ? "আপডেট সফল হয়েছে!" : "কনফিগারেশন শেয়ার সফল হয়েছে!", "success"); resetShareForm(); })
+            .catch(err => { console.error(err); showToast("অ্যাকশন ব্যর্থ হয়েছে (Rules চেক করুন)", "error"); });
         }
 
         function editSharedConfig(id, name, email, configStr) {
             document.getElementById('share-doc-id').value = id;
             document.getElementById('share-name').value = name;
             document.getElementById('share-email').value = email;
-            
-            try {
-                const obj = JSON.parse(configStr);
-                document.getElementById('share-config').value = JSON.stringify(obj, null, 2); 
-            } catch(e) {
-                document.getElementById('share-config').value = configStr;
-            }
-            
+            try { const obj = JSON.parse(configStr); document.getElementById('share-config').value = JSON.stringify(obj, null, 2); } 
+            catch(e) { document.getElementById('share-config').value = configStr; }
             document.getElementById('btn-share-config').innerText = "আপডেট করুন";
             document.getElementById('btn-reset-share').classList.remove('hidden');
-            
             document.getElementById('share-name').scrollIntoView({ behavior: 'smooth' });
         }
 
         function deleteSharedConfig(id) {
             if(!masterDB) return;
             if(confirm("আপনি কি নিশ্চিত এই কনফিগারেশনটি ডিলিট করতে চান?")) {
-                masterDB.collection('shared_configs').doc(id).delete()
-                .then(() => showToast("কনফিগারেশন ডিলিট হয়েছে", "neutral"))
-                .catch(err => showToast("ডিলিট ব্যর্থ হয়েছে", "error"));
+                masterDB.collection('shared_configs').doc(id).delete().then(() => showToast("কনফিগারেশন ডিলিট হয়েছে", "neutral")).catch(err => showToast("ডিলিট ব্যর্থ হয়েছে", "error"));
             }
         }
 
@@ -783,68 +845,88 @@
             try {
                 if (firebase.apps.length > 0) {
                     const defaultApp = firebase.apps.find(a => a.name === '[DEFAULT]');
-                    if(defaultApp) {
-                        defaultApp.delete().then(() => doInitActive(config));
-                    } else {
-                        doInitActive(config);
-                    }
-                } else {
-                    doInitActive(config);
-                }
+                    if(defaultApp) { defaultApp.delete().then(() => doInitActive(config)); } else { doInitActive(config); }
+                } else { doInitActive(config); }
             } catch(e) { console.error(e); }
         }
 
         function doInitActive(config) {
             const app = firebase.initializeApp(config);
             activeDB = app.firestore();
-            
             document.getElementById('active-indicator').classList.remove('bg-gray-500');
             document.getElementById('active-indicator').classList.add('bg-green-500', 'animate-pulse');
             document.getElementById('active-text').innerText = "Active: " + config.projectId;
             document.getElementById('firebase-status').classList.remove('hidden');
-
             const docRef = activeDB.collection('noksha_store').doc('main_data');
             activeDBUnsubscribe = docRef.onSnapshot((doc) => {
                 if (doc.exists) {
                     appData = doc.data();
                     if(!appData.accounts) appData.accounts = [];
                     if(!appData.items) appData.items = [];
-                    if(!appData.cardOrder) appData.cardOrder = initialData.cardOrder;
+                    // Ensure cardOrder is robustly initialized
+                    if(!appData.cardOrder || !Array.isArray(appData.cardOrder)) {
+                        appData.cardOrder = initialData.cardOrder;
+                    } else if (!appData.cardOrder.includes('capital')) {
+                        appData.cardOrder.unshift('capital');
+                    }
                     refreshUI();
-                } else {
-                    appData = initialData; 
-                    refreshUI();
-                }
+                } else { appData = initialData; refreshUI(); }
             });
         }
 
         function saveData() {
             localStorage.setItem('nokshaData', JSON.stringify(appData));
-            if (activeDB) {
-                activeDB.collection('noksha_store').doc('main_data').set(appData)
-                .catch(err => console.error("Save Error", err));
-            }
+            if (activeDB) { activeDB.collection('noksha_store').doc('main_data').set(appData).catch(err => console.error("Save Error", err)); }
             refreshUI();
         }
 
-        async function performHardReset() {
-            if(confirm("সতর্কতা! আপনি কি নিশ্চিত আপনি 'হার্ড রিসেট' করতে চান?\n\nএটি করলে বর্তমানে কানেক্টেড ডাটাবেজের সমস্ত ডাটা মুছে যাবে।")) {
-                if(confirm("এটি শেষ সতর্কতা: সমস্ত ডাটা পার্মানেন্টলি মুছে ফেলা হবে। আপনি কি নিশ্চিত?")) {
-                    if(activeDB) {
-                        try {
-                            await activeDB.collection('noksha_store').doc('main_data').set(initialData);
-                            showToast("ডাটাবেজ ওয়াইপ করা হয়েছে...", "neutral");
-                        } catch(e) {
-                            console.error("Wipe failed", e);
-                            alert("ডাটাবেজ ক্লিয়ার করতে সমস্যা হয়েছে। পারমিশন চেক করুন।");
-                        }
-                    }
-                    localStorage.removeItem('nokshaData');
-                    localStorage.removeItem('masterConfig');
-                    localStorage.removeItem('activeConfig');
-                    localStorage.removeItem('dbListOrder');
-                    setTimeout(() => location.reload(), 1000); 
-                }
+        function confirmResetProfit() {
+            if(confirm("সতর্কতা: আপনি কি 'মোট লাভ' এর হিসাব ০ (শূন্য) করতে চান?")) {
+                appData.profit = 0;
+                saveData();
+                renderAdminPanel();
+                showToast("লাভের হিসাব রিসেট করা হয়েছে", "success");
+            }
+        }
+
+        function resetCash() {
+            if(confirm("সতর্কতা: আপনি কি নিশ্চিত ক্যাশ ব্যালেন্স ০ (শূন্য) করতে চান?")) {
+                appData.cash = 0;
+                addToHistory('ক্যাশ রিসেট', 'ম্যানুয়াল রিসেট', 0, 0, 0, 0);
+                saveData();
+                renderAdminPanel();
+                closeModal('modal-manage-cash');
+                showToast("ক্যাশ রিসেট করা হয়েছে", "success");
+            }
+        }
+
+        function openHardResetModal() {
+            document.getElementById('modal-hard-reset').classList.remove('hidden');
+        }
+
+        function submitHardReset() {
+            if(!activeDB) { showToast("ডাটাবেজ কানেক্টেড নয়!", "error"); return; }
+            
+            const wipeHistory = document.getElementById('reset-history').checked;
+            const wipeAccounts = document.getElementById('reset-accounts').checked;
+            const wipeItems = document.getElementById('reset-items').checked;
+            const wipeOrders = document.getElementById('reset-orders').checked;
+
+            if(!wipeHistory && !wipeAccounts && !wipeItems && !wipeOrders) {
+                showToast("কমপক্ষে একটি অপশন সিলেক্ট করুন", "error");
+                return;
+            }
+
+            if(confirm("আপনি কি নিশ্চিত নির্বাচিত ডাটাগুলো ডিলিট করতে চান?")) {
+                if (wipeHistory) appData.history = [];
+                if (wipeAccounts) appData.accounts = [];
+                if (wipeItems) appData.items = [];
+                if (wipeOrders) appData.orders = [];
+
+                saveData();
+                closeModal('modal-hard-reset');
+                showToast("নির্বাচিত ডাটা ডিলিট করা হয়েছে", "success");
+                refreshUI();
             }
         }
 
@@ -859,13 +941,10 @@
         function showSection(sectionName) {
             document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('nav-active'));
             document.getElementById(`nav-${sectionName === 'admin' ? 'admin' : (sectionName === 'orders' ? 'orders' : 'customer')}`).classList.add('nav-active');
-
             document.getElementById('section-customer').classList.add('hidden-section');
             document.getElementById('section-admin').classList.add('hidden-section');
             document.getElementById('section-orders').classList.add('hidden-section');
-
             document.getElementById(`section-${sectionName}`).classList.remove('hidden-section');
-
             if (sectionName === 'customer') renderCustomerView();
             if (sectionName === 'admin') renderAdminPanel();
             if (sectionName === 'orders') renderOrders();
@@ -873,11 +952,7 @@
 
         function renderNav() {
             const orderBtn = document.getElementById('nav-orders');
-            if (isAdminLoggedIn) {
-                orderBtn.classList.remove('hidden');
-            } else {
-                orderBtn.classList.add('hidden');
-            }
+            if (isAdminLoggedIn) { orderBtn.classList.remove('hidden'); } else { orderBtn.classList.add('hidden'); }
         }
 
         // --- RENDER FUNCTIONS ---
@@ -887,18 +962,8 @@
             container.innerHTML = '';
             
             if (!activeDB && !localStorage.getItem('activeConfig')) {
-                 container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">
-                    <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-3 text-blue-500"></i>
-                    <p>সিস্টেম কানেক্ট হচ্ছে, অপেক্ষা করুন...</p>
-                 </div>`;
-                 setTimeout(() => {
-                     if(!activeDB && container.innerHTML.includes('সিস্টেম কানেক্ট হচ্ছে')) {
-                          container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">
-                            <i class="fa-solid fa-box-open text-4xl mb-3 opacity-50"></i>
-                            <p>কোনো সার্ভিস ডাটা পাওয়া যায়নি।</p>
-                         </div>`;
-                     }
-                 }, 5000);
+                 container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10"><i class="fa-solid fa-circle-notch fa-spin text-4xl mb-3 text-blue-500"></i><p>সিস্টেম কানেক্ট হচ্ছে, অপেক্ষা করুন...</p></div>`;
+                 setTimeout(() => { if(!activeDB && container.innerHTML.includes('সিস্টেম কানেক্ট হচ্ছে')) { container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10"><i class="fa-solid fa-box-open text-4xl mb-3 opacity-50"></i><p>কোনো সার্ভিস ডাটা পাওয়া যায়নি।</p></div>`; } }, 5000);
                  return;
             }
 
@@ -911,14 +976,14 @@
                 if (item.name.toLowerCase().includes(searchVal) || item.category.toLowerCase().includes(searchVal)) {
                     const card = `
                         <div class="bg-dark-800 rounded-xl overflow-hidden border border-gray-700 hover:border-blue-500 transition shadow-lg group">
-                            <div class="p-5">
+                            <div class="p-5 cursor-pointer" onclick="openProductDetails(${item.id}, 'customer')">
                                 <div class="flex justify-between items-start">
                                     <span class="bg-blue-900 text-blue-300 text-xs px-2 py-1 rounded uppercase font-bold">${item.category}</span>
                                     <span class="text-green-400 font-bold">৳ ${item.price}</span>
                                 </div>
                                 <h3 class="text-xl font-bold text-white mt-3">${item.name}</h3>
                                 <div class="mt-4 bg-dark-900 p-3 rounded text-sm text-gray-400">
-                                    <i class="fa-solid fa-file-lines mr-2"></i> কাগজপত্র: <p class="mt-1 text-gray-300 text-xs">${item.docs}</p>
+                                    <i class="fa-solid fa-file-lines mr-2"></i> বিস্তারিত জানতে ক্লিক করুন
                                 </div>
                             </div>
                             <button onclick="openOrderModal(${item.id})" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 font-bold transition">অর্ডার করুন <i class="fa-solid fa-arrow-right ml-2"></i></button>
@@ -929,37 +994,30 @@
         }
 
         function renderAdminPanel() {
-            // Logic for calculating values
             let totalAccountBalance = appData.accounts.reduce((acc, curr) => acc + parseInt(curr.balance), 0);
             appData.balance = totalAccountBalance;
-            
-            let totalStockVal = appData.items.reduce((acc, item) => {
-                if(item.stock > 0) return acc + (item.cost * item.stock);
-                return acc;
-            }, 0);
+            let totalStockVal = appData.items.reduce((acc, item) => { if(item.stock > 0) return acc + (item.cost * item.stock); return acc; }, 0);
             appData.stockVal = totalStockVal;
+            
+            // Calc Capital
+            appData.capital = appData.cash + totalAccountBalance + totalStockVal;
 
-            // Render Stats Cards based on Order
             const statsContainer = document.getElementById('admin-stats-container');
             statsContainer.innerHTML = '';
             
-            // Default order check
-            if(!appData.cardOrder) appData.cardOrder = ['cash', 'balance', 'stock', 'profit'];
+            if(!appData.cardOrder || !Array.isArray(appData.cardOrder)) {
+                appData.cardOrder = ['capital', 'cash', 'balance', 'stock', 'profit'];
+            } else if(!appData.cardOrder.includes('capital')) {
+                appData.cardOrder.unshift('capital');
+            }
 
             appData.cardOrder.forEach((key, index) => {
                 const def = statsDefinitions[key];
                 if(!def) return;
-                
                 const val = appData[def.valueKey];
-                
-                // Fix: Construct classes properly to avoid duplicate class attributes
                 let cardClasses = "draggable-item bg-dark-800 p-5 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden group transition";
                 let onClickAttr = "";
-                
-                if (def.action) {
-                    cardClasses += ` cursor-pointer hover:border-${def.color}-500`;
-                    onClickAttr = `onclick="${def.action}"`;
-                }
+                if (def.action) { cardClasses += ` cursor-pointer hover:border-${def.color}-500`; onClickAttr = `onclick="${def.action}"`; }
                 
                 const card = `
                     <div ${onClickAttr} class="${cardClasses}" draggable="true" data-type="card" data-index="${index}">
@@ -979,7 +1037,7 @@
 
             renderAdminItems();
             renderHistory();
-            addDragListeners(); // Re-bind for cards
+            addDragListeners();
         }
 
         function renderAdminItems() {
@@ -1003,7 +1061,7 @@
                         <tr class="border-b border-gray-700 hover:bg-dark-700 transition ${rowClass}" ${draggableAttr} data-type="item" data-index="${index}">
                             <td class="p-3 text-white font-medium flex items-center gap-2">
                                 ${isDraggable ? '<i class="fa-solid fa-grip-lines text-gray-600 mr-2 cursor-grab"></i>' : ''}
-                                ${item.name}
+                                <span class="hover:text-blue-400 cursor-pointer hover:underline" onclick="openProductDetails(${item.id}, 'admin')">${item.name}</span>
                             </td>
                             <td class="p-3"><span class="bg-gray-700 text-xs px-2 py-1 rounded">${item.category}</span></td>
                             <td class="p-3 text-red-300">${item.cost}</td>
@@ -1024,306 +1082,98 @@
         }
 
         // --- GLOBAL DRAG AND DROP LOGIC ---
-        let dragSrcEl = null;
-        let dragType = null;
-        let dragStartIndex = null;
-
+        let dragSrcEl = null; let dragType = null; let dragStartIndex = null;
         function addDragListeners() {
             const items = document.querySelectorAll('.draggable-item');
             items.forEach(item => {
-                item.removeEventListener('dragstart', handleDragStart);
-                item.removeEventListener('dragover', handleDragOver);
-                item.removeEventListener('drop', handleDrop);
-                item.removeEventListener('dragenter', handleDragEnter);
-                item.removeEventListener('dragleave', handleDragLeave);
-
-                item.addEventListener('dragstart', handleDragStart);
-                item.addEventListener('dragover', handleDragOver);
-                item.addEventListener('drop', handleDrop);
-                item.addEventListener('dragenter', handleDragEnter);
-                item.addEventListener('dragleave', handleDragLeave);
+                item.removeEventListener('dragstart', handleDragStart); item.removeEventListener('dragover', handleDragOver); item.removeEventListener('drop', handleDrop); item.removeEventListener('dragenter', handleDragEnter); item.removeEventListener('dragleave', handleDragLeave);
+                item.addEventListener('dragstart', handleDragStart); item.addEventListener('dragover', handleDragOver); item.addEventListener('drop', handleDrop); item.addEventListener('dragenter', handleDragEnter); item.addEventListener('dragleave', handleDragLeave);
             });
         }
-
-        function handleDragStart(e) {
-            dragSrcEl = this;
-            dragType = this.getAttribute('data-type');
-            dragStartIndex = +this.getAttribute('data-index');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', this.innerHTML);
-            this.classList.add('dragging');
-        }
-
-        function handleDragOver(e) {
-            if (e.preventDefault) e.preventDefault();
-            return false;
-        }
-
-        function handleDragEnter(e) {
-            this.classList.add('bg-dark-600');
-        }
-
-        function handleDragLeave(e) {
-            this.classList.remove('bg-dark-600');
-        }
-
+        function handleDragStart(e) { dragSrcEl = this; dragType = this.getAttribute('data-type'); dragStartIndex = +this.getAttribute('data-index'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/html', this.innerHTML); this.classList.add('dragging'); }
+        function handleDragOver(e) { if (e.preventDefault) e.preventDefault(); return false; }
+        function handleDragEnter(e) { this.classList.add('bg-dark-600'); }
+        function handleDragLeave(e) { this.classList.remove('bg-dark-600'); }
         function handleDrop(e) {
-            if (e.stopPropagation) e.stopPropagation();
-            this.classList.remove('dragging');
-            this.classList.remove('bg-dark-600');
-
-            const targetType = this.getAttribute('data-type');
-            const targetIndex = +this.getAttribute('data-index');
-
+            if (e.stopPropagation) e.stopPropagation(); this.classList.remove('dragging'); this.classList.remove('bg-dark-600');
+            const targetType = this.getAttribute('data-type'); const targetIndex = +this.getAttribute('data-index');
             if (dragSrcEl !== this && dragType === targetType) {
-                if (dragType === 'item') {
-                    // Swap Service Items
-                    const movedItem = appData.items.splice(dragStartIndex, 1)[0];
-                    appData.items.splice(targetIndex, 0, movedItem);
-                    saveData();
-                    renderAdminItems();
-                } 
-                else if (dragType === 'card') {
-                    // Swap Stats Cards
-                    const movedCard = appData.cardOrder.splice(dragStartIndex, 1)[0];
-                    appData.cardOrder.splice(targetIndex, 0, movedCard);
-                    saveData();
-                    renderAdminPanel();
-                }
-                else if (dragType === 'account') {
-                    // Swap Accounts
-                    const movedAcc = appData.accounts.splice(dragStartIndex, 1)[0];
-                    appData.accounts.splice(targetIndex, 0, movedAcc);
-                    saveData();
-                    renderAccountsList();
-                }
-                else if (dragType === 'db') {
-                    // Swap Database Configs (Local Only)
-                    const movedDb = localDbList.splice(dragStartIndex, 1)[0];
-                    localDbList.splice(targetIndex, 0, movedDb);
-                    
-                    // Save Sort Order to LocalStorage
-                    const orderIds = localDbList.map(db => db.id);
-                    localStorage.setItem('dbListOrder', JSON.stringify(orderIds));
-                    
-                    renderDbList();
-                    showToast("ডাটাবেজ সাজানো হয়েছে", "success");
-                }
-            }
-            return false;
+                if (dragType === 'item') { const movedItem = appData.items.splice(dragStartIndex, 1)[0]; appData.items.splice(targetIndex, 0, movedItem); saveData(); renderAdminItems(); } 
+                else if (dragType === 'card') { const movedCard = appData.cardOrder.splice(dragStartIndex, 1)[0]; appData.cardOrder.splice(targetIndex, 0, movedCard); saveData(); renderAdminPanel(); }
+                else if (dragType === 'account') { const movedAcc = appData.accounts.splice(dragStartIndex, 1)[0]; appData.accounts.splice(targetIndex, 0, movedAcc); saveData(); renderAccountsList(); }
+                else if (dragType === 'db') { const movedDb = localDbList.splice(dragStartIndex, 1)[0]; localDbList.splice(targetIndex, 0, movedDb); const orderIds = localDbList.map(db => db.id); localStorage.setItem('dbListOrder', JSON.stringify(orderIds)); renderDbList(); showToast("ডাটাবেজ সাজানো হয়েছে", "success"); }
+            } return false;
         }
 
-        // ADDED: Missing function
-        function renderOrders() {
-            const container = document.getElementById('orders-container');
-            container.innerHTML = '';
-            
-            if (appData.orders.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-500 mt-10">কোনো অর্ডার পেন্ডিং নেই</div>';
-                return;
-            }
+        // --- NEW FEATURES LOGIC ---
 
-            appData.orders.forEach((order, index) => {
-                const div = `
-                    <div class="bg-dark-800 p-4 rounded-lg border border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div>
-                            <p class="text-blue-400 text-sm font-bold">অর্ডার #${order.id}</p>
-                            <h4 class="text-white font-bold text-lg">${order.itemName}</h4>
-                            <p class="text-gray-400 text-xs">কাস্টমার: ${order.customerName} (${order.customerPhone})</p>
-                            <p class="text-gray-500 text-xs">${order.date}</p>
+        function openProductDetails(id, viewType) {
+            const item = appData.items.find(i => i.id === id);
+            if(!item) return;
+
+            document.getElementById('pd-name').innerText = item.name;
+            document.getElementById('pd-category').innerText = item.category;
+            const contentDiv = document.getElementById('pd-content');
+            contentDiv.innerHTML = '';
+
+            if (viewType === 'admin') {
+                const totalStockCost = item.stock * item.cost;
+                const totalStockSale = item.stock * item.price;
+                const totalStockProfit = item.stock * (item.price - item.cost);
+                
+                contentDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="bg-dark-800 p-3 rounded">
+                            <p class="text-gray-400">বর্তমান স্টক</p>
+                            <p class="text-xl font-bold text-white">${item.stock} টি</p>
                         </div>
-                        <div class="flex gap-2">
-                             <button onclick="approveOrder(${index})" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-bold shadow-lg">এপ্রুভ</button>
-                             <button onclick="deleteOrder(${index})" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm shadow-lg">ডিলিট</button>
+                        <div class="bg-dark-800 p-3 rounded">
+                            <p class="text-gray-400">প্রতি পিস লাভ</p>
+                            <p class="text-xl font-bold text-green-400">৳ ${item.price - item.cost}</p>
                         </div>
                     </div>
+                    <div class="bg-dark-900 p-4 rounded border border-gray-700">
+                        <h4 class="text-gray-300 font-bold mb-3 border-b border-gray-700 pb-2">স্টক বিশ্লেষণ</h4>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-400">মোট কেনা খরচ:</span>
+                            <span class="text-red-400 font-bold">৳ ${totalStockCost}</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-400">সম্ভাব্য বিক্রয় মূল্য:</span>
+                            <span class="text-blue-400 font-bold">৳ ${totalStockSale}</span>
+                        </div>
+                        <div class="flex justify-between pt-2 border-t border-gray-700">
+                            <span class="text-gray-300">সম্ভাব্য মোট লাভ:</span>
+                            <span class="text-green-400 font-bold text-lg">৳ ${totalStockProfit}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-xs text-gray-500 mb-1">প্রয়োজনীয় কাগজপত্র:</p>
+                        <p class="text-gray-300 text-sm bg-dark-800 p-2 rounded">${item.docs}</p>
+                    </div>
                 `;
-                container.innerHTML += div;
-            });
-        }
-
-        // --- MODAL & LOGIC FUNCTIONS ---
-        
-        function openAccountsModal() {
-            renderAccountsList();
-            document.getElementById('modal-manage-accounts').classList.remove('hidden');
-        }
-
-        function renderAccountsList() {
-            const tbody = document.getElementById('accounts-list-body');
-            tbody.innerHTML = '';
-            let total = 0;
-
-            if(appData.accounts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-5 text-center text-gray-500">কোনো অ্যাকাউন্ট নেই। নতুন যুক্ত করুন।</td></tr>';
-            }
-
-            appData.accounts.forEach((acc, index) => {
-                total += parseInt(acc.balance);
-                tbody.innerHTML += `
-                    <tr class="draggable-item border-b border-gray-700 hover:bg-dark-800 transition" draggable="true" data-type="account" data-index="${index}">
-                        <td class="p-3 text-white font-medium flex items-center gap-2">
-                            <i class="fa-solid fa-grip-lines text-gray-600 cursor-grab mr-2"></i> ${acc.name}
-                        </td>
-                        <td class="p-3 text-right text-blue-400 font-bold">৳ ${acc.balance}</td>
-                        <td class="p-3 text-center">
-                            <button onclick="openAccountTransactModal(${acc.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs"><i class="fa-solid fa-money-bill-transfer"></i></button>
-                        </td>
-                        <td class="p-3 text-right">
-                            <button onclick="editAccount(${acc.id})" class="text-blue-400 hover:text-white mr-2 text-xs"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteAccount(${acc.id})" class="text-red-400 hover:text-white text-xs"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-            });
-            document.getElementById('modal-total-balance').innerText = '৳ ' + total;
-            addDragListeners();
-        }
-
-        function openAccountFormModal(id = null) {
-            document.getElementById('modal-account-form').classList.remove('hidden');
-            const balanceLabel = document.querySelector('#initial-balance-div label');
-
-            if(id) {
-                const acc = appData.accounts.find(a => a.id === id);
-                document.getElementById('account-form-title').innerText = "অ্যাকাউন্ট এডিট করুন";
-                document.getElementById('account-id').value = acc.id;
-                document.getElementById('account-name').value = acc.name;
+            } else {
+                // Customer View
+                const docsList = item.docs.split(',').map(d => d.trim()).filter(d => d).map(d => `<li class="flex items-start gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i><span>${d}</span></li>`).join('');
                 
-                // Show current balance for editing
-                document.getElementById('initial-balance-div').classList.remove('hidden');
-                document.getElementById('account-initial-balance').value = acc.balance;
-                balanceLabel.innerText = "বর্তমান ব্যালেন্স (সংশোধন)";
-            } else {
-                document.getElementById('account-form-title').innerText = "নতুন অ্যাকাউন্ট";
-                document.getElementById('account-id').value = '';
-                document.getElementById('account-name').value = '';
-                document.getElementById('account-initial-balance').value = '';
-                document.getElementById('initial-balance-div').classList.remove('hidden');
-                balanceLabel.innerText = "শুরুর ব্যালেন্স";
+                contentDiv.innerHTML = `
+                    <div class="bg-blue-900/20 p-4 rounded-lg border border-blue-500/30 mb-4">
+                        <p class="text-center text-blue-300 font-bold text-lg">মূল্য: ৳ ${item.price}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-3"><i class="fa-solid fa-file-lines mr-2"></i>প্রয়োজনীয় কাগজপত্র:</h4>
+                        <ul class="space-y-2 text-gray-300 text-sm">
+                            ${docsList.length ? docsList : '<li class="text-gray-500 italic">কোনো বিশেষ কাগজপত্রের প্রয়োজন নেই।</li>'}
+                        </ul>
+                    </div>
+                    <div class="mt-6 text-center text-xs text-gray-500">
+                        * বিস্তারিত জানতে বা অর্ডার করতে নিচের "অর্ডার করুন" বাটনে ক্লিক করুন।
+                    </div>
+                `;
             }
+
+            document.getElementById('modal-product-details').classList.remove('hidden');
         }
-
-        function saveAccount() {
-            const id = document.getElementById('account-id').value;
-            const name = document.getElementById('account-name').value;
-            const balanceVal = parseInt(document.getElementById('account-initial-balance').value) || 0;
-
-            if(!name) return;
-
-            if(id) {
-                const index = appData.accounts.findIndex(a => a.id == id);
-                appData.accounts[index].name = name;
-                appData.accounts[index].balance = balanceVal; 
-            } else {
-                appData.accounts.push({ id: Date.now(), name: name, balance: balanceVal });
-                if(balanceVal > 0) addToHistory('নতুন অ্যাকাউন্ট', `${name} যুক্ত হয়েছে`, 1, 0, balanceVal, 0);
-            }
-            saveData();
-            closeModal('modal-account-form');
-        }
-
-        function deleteAccount(id) {
-            if(confirm("ডিলিট করবেন?")) {
-                appData.accounts = appData.accounts.filter(a => a.id !== id);
-                saveData();
-                renderAccountsList();
-            }
-        }
-
-        function editAccount(id) { openAccountFormModal(id); }
-
-        function openAccountTransactModal(id) {
-            const acc = appData.accounts.find(a => a.id === id);
-            document.getElementById('transact-account-id').value = acc.id;
-            document.getElementById('transact-account-name').innerText = acc.name + " - লেনদেন";
-            document.getElementById('modal-account-transact').classList.remove('hidden');
-        }
-
-        function submitAccountTransaction(type) {
-            const id = parseInt(document.getElementById('transact-account-id').value);
-            const amount = parseInt(document.getElementById('transact-amount').value);
-            const desc = document.getElementById('transact-desc').value || (type === 'deposit' ? 'জমা' : 'খরচ');
-            
-            if(!amount) return;
-            const acc = appData.accounts.find(a => a.id === id);
-
-            if(type === 'deposit') {
-                acc.balance += amount;
-                addToHistory('অ্যাকাউন্ট জমা', `${acc.name} - ${desc}`, 1, 0, amount, 0);
-            } else {
-                if(acc.balance < amount) { showToast("ব্যালেন্স কম!", "error"); return; }
-                acc.balance -= amount;
-                addToHistory('অ্যাকাউন্ট খরচ', `${acc.name} - ${desc}`, 1, amount, 0, 0);
-            }
-            saveData();
-            closeModal('modal-account-transact');
-        }
-
-        function openManageCashModal() { document.getElementById('modal-manage-cash').classList.remove('hidden'); }
-        
-        function submitCashTransaction(type) {
-            const amount = parseInt(document.getElementById('manage-cash-amount').value);
-            const desc = document.getElementById('manage-cash-desc').value || (type === 'add' ? 'জমা' : 'উত্তোলন');
-            if(!amount) return;
-
-            if (type === 'add') {
-                appData.cash += amount;
-                addToHistory('ম্যানুয়াল ক্যাশ জমা', desc, 1, 0, amount, 0);
-            } else {
-                if (appData.cash < amount) { showToast("ক্যাশ নেই!", "error"); return; }
-                appData.cash -= amount;
-                addToHistory('ক্যাশ উত্তোলন', desc, 1, 0, amount, 0);
-            }
-            saveData();
-            closeModal('modal-manage-cash');
-        }
-
-        function openItemModal(id = null) {
-            document.getElementById('modal-item').classList.remove('hidden');
-            if(id) {
-                const item = appData.items.find(i => i.id === id);
-                document.getElementById('modal-item-title').innerText = "এডিট করুন";
-                document.getElementById('item-id').value = item.id;
-                document.getElementById('item-name').value = item.name;
-                document.getElementById('item-category').value = item.category;
-                document.getElementById('item-docs').value = item.docs;
-                document.getElementById('item-cost').value = item.cost;
-                document.getElementById('item-price').value = item.price;
-                document.getElementById('item-stock').value = item.stock;
-            } else {
-                document.getElementById('modal-item-title').innerText = "নতুন প্রোডাক্ট";
-                document.getElementById('item-id').value = '';
-                document.getElementById('item-name').value = '';
-                document.getElementById('item-category').value = '';
-                document.getElementById('item-docs').value = '';
-                document.getElementById('item-cost').value = '';
-                document.getElementById('item-price').value = '';
-                document.getElementById('item-stock').value = '';
-            }
-        }
-
-        function saveItem() {
-            const id = document.getElementById('item-id').value;
-            const newItem = {
-                id: id ? parseInt(id) : Date.now(),
-                name: document.getElementById('item-name').value,
-                category: document.getElementById('item-category').value,
-                docs: document.getElementById('item-docs').value,
-                cost: parseInt(document.getElementById('item-cost').value),
-                price: parseInt(document.getElementById('item-price').value),
-                stock: parseInt(document.getElementById('item-stock').value)
-            };
-            if (id) {
-                const index = appData.items.findIndex(i => i.id == id);
-                appData.items[index] = newItem;
-            } else {
-                appData.items.push(newItem);
-            }
-            saveData();
-            closeModal('modal-item');
-        }
-
-        function deleteItem(id) { if(confirm("ডিলিট করবেন?")) { appData.items = appData.items.filter(i => i.id !== id); saveData(); } }
 
         let currentQuickSaleItem = null;
         function openQuickSaleModal(id) {
@@ -1331,7 +1181,10 @@
             document.getElementById('qs-name').innerText = currentQuickSaleItem.name;
             document.getElementById('qs-price').innerText = currentQuickSaleItem.price;
             document.getElementById('qs-cost').innerText = currentQuickSaleItem.cost;
+            
             document.getElementById('qs-qty').value = 1;
+            document.getElementById('qs-custom-price').value = currentQuickSaleItem.price; // Set default price
+            
             updateQSPreview();
             document.getElementById('modal-quicksale').classList.remove('hidden');
         }
@@ -1339,129 +1192,94 @@
         function updateQSPreview() {
             if(!currentQuickSaleItem) return;
             const qty = parseInt(document.getElementById('qs-qty').value) || 0;
-            document.getElementById('qs-total').innerText = qty * currentQuickSaleItem.price;
+            const customPrice = parseInt(document.getElementById('qs-custom-price').value) || 0;
+            
+            const totalBill = qty * customPrice;
+            const totalCost = qty * currentQuickSaleItem.cost;
+            const potentialProfit = totalBill - totalCost;
+
+            document.getElementById('qs-total').innerText = totalBill;
+            
+            const profitEl = document.getElementById('qs-profit-preview');
+            profitEl.innerText = potentialProfit;
+            profitEl.className = potentialProfit >= 0 ? "text-green-400" : "text-red-400";
         }
 
         function submitQuickSale() {
             const qty = parseInt(document.getElementById('qs-qty').value) || 1;
+            const customPrice = parseInt(document.getElementById('qs-custom-price').value) || 0;
+            
             if (qty < 1) return;
             const item = currentQuickSaleItem;
             
             const totalCost = parseInt(item.cost) * qty;
-            const totalPrice = parseInt(item.price) * qty;
+            const totalPrice = customPrice * qty; // Use Custom Price
             const totalProfit = totalPrice - totalCost;
             
             appData.cash += totalPrice;
             appData.profit += totalProfit;
             if (item.stock > 0) item.stock = Math.max(0, item.stock - qty);
 
-            addToHistory('বিক্রয়', item.name, qty, totalCost, totalPrice, totalProfit);
+            // Updated History Message to show custom price if changed
+            let note = item.name;
+            if(customPrice !== item.price) note += ` (Sold @ ${customPrice})`;
+
+            addToHistory('বিক্রয়', note, qty, totalCost, totalPrice, totalProfit);
             saveData();
             closeModal('modal-quicksale');
             showToast("বিক্রয় সফল", "success");
         }
 
-        function openOrderModal(id) {
-            const item = appData.items.find(i => i.id === id);
-            if (!item) return;
-            // Simplified logic for order modal opening
-            document.getElementById('modal-order').classList.remove('hidden');
-        }
-
-        function submitOrder() {
-            closeModal('modal-order');
-            showToast("অর্ডার হয়েছে", "success");
-        }
-
-        function approveOrder(index) {
-            const order = appData.orders[index];
-            const qty = 1; 
-            const totalCost = parseInt(order.cost) * qty;
-            const totalPrice = parseInt(order.price) * qty;
-            const totalProfit = totalPrice - totalCost;
+        // --- EXISTING HELPER FUNCTIONS ---
+        function openOrderModal(id) { const item = appData.items.find(i => i.id === id); if (!item) return; document.getElementById('order-item-name').innerText = item.name; document.getElementById('order-item-price').innerText = item.price; document.getElementById('modal-order').classList.remove('hidden'); }
+        function submitOrder() { 
+            const name = document.getElementById('order-customer-name').value;
+            const phone = document.getElementById('order-customer-phone').value;
+            const itemName = document.getElementById('order-item-name').innerText;
+            const item = appData.items.find(i => i.name === itemName);
             
-            appData.cash += totalPrice;
-            appData.profit += totalProfit;
-            addToHistory('অর্ডার সম্পন্ন', order.itemName, qty, totalCost, totalPrice, totalProfit);
-            appData.orders.splice(index, 1);
+            if(!name || !phone) { showToast("তথ্য দিন!", "error"); return; }
+            
+            appData.orders.unshift({
+                id: Date.now().toString().slice(-4),
+                itemName: itemName,
+                cost: item ? item.cost : 0,
+                price: item ? item.price : 0,
+                customerName: name,
+                customerPhone: phone,
+                date: new Date().toLocaleString('bn-BD')
+            });
             saveData();
-            renderOrders();
-            renderAdminPanel(); 
-            showToast("অর্ডার এপ্রুভ হয়েছে", "success");
+            closeModal('modal-order'); 
+            showToast("অর্ডার হয়েছে", "success"); 
         }
-
-        function deleteOrder(index) {
-            if(confirm("অর্ডারটি বাতিল করতে চান?")) {
-                appData.orders.splice(index, 1);
-                saveData();
-                renderOrders();
-            }
-        }
-
-        function addToHistory(type, name, qty, cost, price, profit) {
-            appData.history.unshift({
-                id: Date.now(), type, name, qty, totalCost: cost, totalPrice: price, totalProfit: profit,
-                dateStr: new Date().toLocaleDateString('bn-BD'),
-                timeStr: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
-            });
-            if (appData.history.length > 200) appData.history.pop();
-        }
-
-        function renderHistory() {
-            const tbody = document.getElementById('history-body');
-            tbody.innerHTML = '';
-            if (appData.history.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500">কোনো হিস্ট্রি নেই।</td></tr>'; return;
-            }
-            appData.history.forEach(h => {
-                let typeClass = h.type.includes('বিক্রয়') ? 'text-blue-400' : (h.type.includes('জমা') ? 'text-green-400' : 'text-purple-400');
-                if(h.type.includes('উত্তোলন') || h.type.includes('খরচ')) typeClass = 'text-red-400';
-                
-                const row = `
-                    <tr class="border-b border-gray-800 hover:bg-dark-800 transition">
-                        <td class="p-3 text-gray-400 text-xs font-bold">${h.dateStr}<br><span class="opacity-70 font-normal">${h.timeStr}</span></td>
-                        <td class="p-3"><div class="font-medium text-white text-sm">${h.name}</div><div class="text-[10px] ${typeClass}">${h.type}</div></td>
-                        <td class="p-3 text-center"><span class="bg-dark-700 text-gray-300 px-2 py-1 rounded text-xs font-bold">${h.qty || 1}</span></td>
-                        <td class="p-3 text-right text-gray-400 text-xs">৳ ${h.totalCost || 0}</td>
-                        <td class="p-3 text-right text-white font-bold text-sm">৳ ${h.totalPrice || 0}</td>
-                        <td class="p-3 text-right text-green-400 font-bold text-sm">+ ৳ ${h.totalProfit || 0}</td>
-                    </tr>`;
-                tbody.innerHTML += row;
-            });
-        }
-
-        function resetHistory() {
-            if(confirm("সব হিস্ট্রি মুছবেন?")) { appData.history = []; saveData(); }
-        }
-
+        function approveOrder(index) { const order = appData.orders[index]; const qty = 1; const totalCost = parseInt(order.cost) * qty; const totalPrice = parseInt(order.price) * qty; const totalProfit = totalPrice - totalCost; appData.cash += totalPrice; appData.profit += totalProfit; addToHistory('অর্ডার সম্পন্ন', order.itemName, qty, totalCost, totalPrice, totalProfit); appData.orders.splice(index, 1); saveData(); renderOrders(); renderAdminPanel(); showToast("অর্ডার এপ্রুভ হয়েছে", "success"); }
+        function deleteOrder(index) { if(confirm("অর্ডারটি বাতিল করতে চান?")) { appData.orders.splice(index, 1); saveData(); renderOrders(); } }
+        function addToHistory(type, name, qty, cost, price, profit) { appData.history.unshift({ id: Date.now(), type, name, qty, totalCost: cost, totalPrice: price, totalProfit: profit, dateStr: new Date().toLocaleDateString('bn-BD'), timeStr: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) }); if (appData.history.length > 200) appData.history.pop(); }
+        function renderHistory() { const tbody = document.getElementById('history-body'); tbody.innerHTML = ''; if (appData.history.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-500">কোনো হিস্ট্রি নেই।</td></tr>'; return; } appData.history.forEach(h => { let typeClass = h.type.includes('বিক্রয়') ? 'text-blue-400' : (h.type.includes('জমা') ? 'text-green-400' : 'text-purple-400'); if(h.type.includes('উত্তোলন') || h.type.includes('খরচ')) typeClass = 'text-red-400'; const row = `<tr class="border-b border-gray-800 hover:bg-dark-800 transition"><td class="p-3 text-gray-400 text-xs font-bold">${h.dateStr}<br><span class="opacity-70 font-normal">${h.timeStr}</span></td><td class="p-3"><div class="font-medium text-white text-sm">${h.name}</div><div class="text-[10px] ${typeClass}">${h.type}</div></td><td class="p-3 text-center"><span class="bg-dark-700 text-gray-300 px-2 py-1 rounded text-xs font-bold">${h.qty || 1}</span></td><td class="p-3 text-right text-gray-400 text-xs">৳ ${h.totalCost || 0}</td><td class="p-3 text-right text-white font-bold text-sm">৳ ${h.totalPrice || 0}</td><td class="p-3 text-right text-green-400 font-bold text-sm">+ ৳ ${h.totalProfit || 0}</td></tr>`; tbody.innerHTML += row; }); }
+        function resetHistory() { if(confirm("সব হিস্ট্রি মুছবেন?")) { appData.history = []; saveData(); } }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        
-        function showToast(msg, type) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.className = `fixed top-20 right-5 z-50 p-4 rounded-lg shadow-xl text-white ${type==='success'?'bg-green-600':(type==='error'?'bg-red-600':'bg-gray-600')}`;
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 3000);
-        }
+        function showToast(msg, type) { const t = document.getElementById('toast'); t.innerText = msg; t.className = `fixed top-20 right-5 z-50 p-4 rounded-lg shadow-xl text-white ${type==='success'?'bg-green-600':(type==='error'?'bg-red-600':'bg-gray-600')}`; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
+        function openAccountsModal() { renderAccountsList(); document.getElementById('modal-manage-accounts').classList.remove('hidden'); }
+        function renderAccountsList() { const tbody = document.getElementById('accounts-list-body'); tbody.innerHTML = ''; let total = 0; if(appData.accounts.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-5 text-center text-gray-500">কোনো অ্যাকাউন্ট নেই। নতুন যুক্ত করুন।</td></tr>'; } appData.accounts.forEach((acc, index) => { total += parseInt(acc.balance); tbody.innerHTML += `<tr class="draggable-item border-b border-gray-700 hover:bg-dark-800 transition" draggable="true" data-type="account" data-index="${index}"><td class="p-3 text-white font-medium flex items-center gap-2"><i class="fa-solid fa-grip-lines text-gray-600 cursor-grab mr-2"></i> ${acc.name}</td><td class="p-3 text-right text-blue-400 font-bold">৳ ${acc.balance}</td><td class="p-3 text-center"><button onclick="openAccountTransactModal(${acc.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs"><i class="fa-solid fa-money-bill-transfer"></i></button></td><td class="p-3 text-right"><button onclick="editAccount(${acc.id})" class="text-blue-400 hover:text-white mr-2 text-xs"><i class="fa-solid fa-pen"></i></button><button onclick="deleteAccount(${acc.id})" class="text-red-400 hover:text-white text-xs"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); document.getElementById('modal-total-balance').innerText = '৳ ' + total; addDragListeners(); }
+        function openAccountFormModal(id = null) { document.getElementById('modal-account-form').classList.remove('hidden'); const balanceLabel = document.querySelector('#initial-balance-div label'); if(id) { const acc = appData.accounts.find(a => a.id === id); document.getElementById('account-form-title').innerText = "অ্যাকাউন্ট এডিট করুন"; document.getElementById('account-id').value = acc.id; document.getElementById('account-name').value = acc.name; document.getElementById('initial-balance-div').classList.remove('hidden'); document.getElementById('account-initial-balance').value = acc.balance; balanceLabel.innerText = "বর্তমান ব্যালেন্স (সংশোধন)"; } else { document.getElementById('account-form-title').innerText = "নতুন অ্যাকাউন্ট"; document.getElementById('account-id').value = ''; document.getElementById('account-name').value = ''; document.getElementById('account-initial-balance').value = ''; document.getElementById('initial-balance-div').classList.remove('hidden'); balanceLabel.innerText = "শুরুর ব্যালেন্স"; } }
+        function saveAccount() { const id = document.getElementById('account-id').value; const name = document.getElementById('account-name').value; const balanceVal = parseInt(document.getElementById('account-initial-balance').value) || 0; if(!name) return; if(id) { const index = appData.accounts.findIndex(a => a.id == id); appData.accounts[index].name = name; appData.accounts[index].balance = balanceVal; } else { appData.accounts.push({ id: Date.now(), name: name, balance: balanceVal }); if(balanceVal > 0) addToHistory('নতুন অ্যাকাউন্ট', `${name} যুক্ত হয়েছে`, 1, 0, balanceVal, 0); } saveData(); closeModal('modal-account-form'); }
+        function deleteAccount(id) { if(confirm("ডিলিট করবেন?")) { appData.accounts = appData.accounts.filter(a => a.id !== id); saveData(); renderAccountsList(); } }
+        function editAccount(id) { openAccountFormModal(id); }
+        function openAccountTransactModal(id) { const acc = appData.accounts.find(a => a.id === id); document.getElementById('transact-account-id').value = acc.id; document.getElementById('transact-account-name').innerText = acc.name + " - লেনদেন"; document.getElementById('modal-account-transact').classList.remove('hidden'); }
+        function submitAccountTransaction(type) { const id = parseInt(document.getElementById('transact-account-id').value); const amount = parseInt(document.getElementById('transact-amount').value); const desc = document.getElementById('transact-desc').value || (type === 'deposit' ? 'জমা' : 'খরচ'); if(!amount) return; const acc = appData.accounts.find(a => a.id === id); if(type === 'deposit') { acc.balance += amount; addToHistory('অ্যাকাউন্ট জমা', `${acc.name} - ${desc}`, 1, 0, amount, 0); } else { if(acc.balance < amount) { showToast("ব্যালেন্স কম!", "error"); return; } acc.balance -= amount; addToHistory('অ্যাকাউন্ট খরচ', `${acc.name} - ${desc}`, 1, amount, 0, 0); } saveData(); closeModal('modal-account-transact'); }
+        function openManageCashModal() { document.getElementById('modal-manage-cash').classList.remove('hidden'); }
+        function submitCashTransaction(type) { const amount = parseInt(document.getElementById('manage-cash-amount').value); const desc = document.getElementById('manage-cash-desc').value || (type === 'add' ? 'জমা' : 'উত্তোলন'); if(!amount) return; if (type === 'add') { appData.cash += amount; addToHistory('ম্যানুয়াল ক্যাশ জমা', desc, 1, 0, amount, 0); } else { if (appData.cash < amount) { showToast("ক্যাশ নেই!", "error"); return; } appData.cash -= amount; addToHistory('ক্যাশ উত্তোলন', desc, 1, 0, amount, 0); } saveData(); closeModal('modal-manage-cash'); }
+        function openItemModal(id = null) { document.getElementById('modal-item').classList.remove('hidden'); if(id) { const item = appData.items.find(i => i.id === id); document.getElementById('modal-item-title').innerText = "এডিট করুন"; document.getElementById('item-id').value = item.id; document.getElementById('item-name').value = item.name; document.getElementById('item-category').value = item.category; document.getElementById('item-docs').value = item.docs; document.getElementById('item-cost').value = item.cost; document.getElementById('item-price').value = item.price; document.getElementById('item-stock').value = item.stock; } else { document.getElementById('modal-item-title').innerText = "নতুন প্রোডাক্ট"; document.getElementById('item-id').value = ''; document.getElementById('item-name').value = ''; document.getElementById('item-category').value = ''; document.getElementById('item-docs').value = ''; document.getElementById('item-cost').value = ''; document.getElementById('item-price').value = ''; document.getElementById('item-stock').value = ''; } }
+        function saveItem() { const id = document.getElementById('item-id').value; const newItem = { id: id ? parseInt(id) : Date.now(), name: document.getElementById('item-name').value, category: document.getElementById('item-category').value, docs: document.getElementById('item-docs').value, cost: parseInt(document.getElementById('item-cost').value), price: parseInt(document.getElementById('item-price').value), stock: parseInt(document.getElementById('item-stock').value) }; if (id) { const index = appData.items.findIndex(i => i.id == id); appData.items[index] = newItem; } else { appData.items.push(newItem); } saveData(); closeModal('modal-item'); }
+        function deleteItem(id) { if(confirm("ডিলিট করবেন?")) { appData.items = appData.items.filter(i => i.id !== id); saveData(); renderAdminItems(); } }
 
-        // --- INIT ---
         window.onload = function() {
-            if(localStorage.getItem('nokshaData')) {
-                appData = JSON.parse(localStorage.getItem('nokshaData'));
-            }
-            
-            // Connect Master (Always, using Hardcoded config)
+            if(localStorage.getItem('nokshaData')) { appData = JSON.parse(localStorage.getItem('nokshaData')); }
             initMasterApp(MASTER_CONFIG);
-
-            if(savedActiveConfig) {
-                initActiveApp(JSON.parse(savedActiveConfig));
-            }
-
-            renderNav();
-            refreshUI();
+            if(savedActiveConfig) { initActiveApp(JSON.parse(savedActiveConfig)); }
+            renderNav(); refreshUI();
         };
-
     </script>
 </body>
-
 </html>
